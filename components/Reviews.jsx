@@ -52,7 +52,7 @@ function ReviewCard({ review }) {
 
 export function ReviewsSection({ reviews = [], summary, limit }) {
   const list = limit ? reviews.slice(0, limit) : reviews;
-  if (!list.length) return null;
+  if (!list.length && (!summary || summary.count <= 0)) return null;
   return (
     <div>
       {summary && summary.count > 0 && (
@@ -72,9 +72,11 @@ export function ReviewsSection({ reviews = [], summary, limit }) {
           )}
         </div>
       )}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {list.map((r, i) => <ReviewCard key={r.id ?? i} review={r} />)}
-      </div>
+      {list.length > 0 && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {list.map((r, i) => <ReviewCard key={r.id ?? i} review={r} />)}
+        </div>
+      )}
     </div>
   );
 }

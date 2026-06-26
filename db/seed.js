@@ -5,7 +5,7 @@ import fs from "fs";
 import path from "path";
 import { sql, hasDb } from "./index.js";
 import { products, categories } from "./seed-data.js";
-import { reviews } from "./reviews-data.js";
+import { reviews, reviewsSummary } from "./reviews-data.js";
 import { posts } from "./posts-data.js";
 import { site, brandNames, districts } from "../lib/site.js";
 import { homeDefaults, designDefaults, pages } from "../lib/panel-schema.js";
@@ -73,18 +73,13 @@ async function run() {
     );
   `;
 
-  // Yorumlar yalnızca tablo boşsa örnek veriyle doldurulur (panel/Places sonradan yönetir).
-  const [{ count }] = await sql`SELECT count(*)::int AS count FROM reviews`;
-  if (count === 0) {
-    console.log(`${reviews.length} örnek yorum yükleniyor...`);
-    for (const r of reviews) {
-      await sql`
-        INSERT INTO reviews (author, rating, text, time, avatar, source, approved)
-        VALUES (${r.author}, ${r.rating}, ${r.text ?? null}, ${r.time ?? null}, ${r.avatar ?? null}, ${r.source ?? "google"}, ${r.approved ?? true});
-      `;
-    }
-  } else {
-    console.log(`Yorumlar tablosunda ${count} kayıt var, örnek yorum atlandı.`);
+  console.log("Mock Google yorumları temizleniyor...");
+  await sql`DELETE FROM reviews WHERE source = 'google'`;
+  for (const r of reviews) {
+    await sql`
+      INSERT INTO reviews (author, rating, text, time, avatar, source, approved)
+      VALUES (${r.author}, ${r.rating}, ${r.text ?? null}, ${r.time ?? null}, ${r.avatar ?? null}, ${r.source ?? "manuel"}, ${r.approved ?? true});
+    `;
   }
 
   console.log("Blog tablosu oluşturuluyor (yoksa)...");
@@ -171,6 +166,11 @@ async function run() {
     INSERT INTO settings (key, value, updated_at)
     VALUES ('design', ${sql.json(designDefaults)}, now())
     ON CONFLICT (key) DO NOTHING;
+  `;
+  await sql`
+    INSERT INTO settings (key, value, updated_at)
+    VALUES ('reviewsSummary', ${sql.json(reviewsSummary)}, now())
+    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now();
   `;
 
   console.log("Tamamlandı ✓");

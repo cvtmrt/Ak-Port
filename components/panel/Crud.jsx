@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Field } from "./Field.jsx";
-import { apiGetCollection, apiSaveCollection, apiSyncGoogleReviews } from "../../lib/admin-api.js";
+import { apiGetCollection, apiSaveCollection } from "../../lib/admin-api.js";
 
 // Salt frontend CRUD ekranı. Veriler bellek içinde (oturum boyunca) tutulur;
 // kalıcı kayıt backend'e bağlanınca yapılır. Değişiklikler sayfa yenilenince sıfırlanır.
@@ -83,20 +83,6 @@ export function Crud({ schema }) {
     }
   }
 
-  async function syncGoogleReviews() {
-    setSaving(true);
-    setStatus("");
-    try {
-      const res = await apiSyncGoogleReviews();
-      setItems(clone(res.items || []));
-      setStatus(`Google yorumları güncellendi. ${res.count || 0} yorum çekildi.`);
-    } catch (err) {
-      setStatus(`Google yorumları çekilemedi: ${err.message}`);
-    } finally {
-      setSaving(false);
-    }
-  }
-
   if (editing) {
     return (
       <div>
@@ -130,11 +116,6 @@ export function Crud({ schema }) {
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-bold text-slate-800">{schema.label} <span className="text-slate-400">({items.length})</span></h2>
         <div className="flex gap-2">
-          {schema.key === "reviews" && (
-            <button onClick={syncGoogleReviews} disabled={saving} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-60">
-              Google'dan Çek
-            </button>
-          )}
           <button onClick={saveAll} disabled={saving} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-60">
             {saving ? "Kaydediliyor..." : "Sunucuya Kaydet"}
           </button>

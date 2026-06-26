@@ -15,7 +15,7 @@ import {
   products as seedProducts,
   categories as seedCategories,
 } from "./seed-data.js";
-import { reviews as seedReviews } from "./reviews-data.js";
+import { reviews as seedReviews, reviewsSummary as seedReviewsSummary } from "./reviews-data.js";
 import { posts as seedPosts } from "./posts-data.js";
 import { site, brandNames, districts as seedDistricts } from "../lib/site.js";
 import { homeDefaults, designDefaults, pages as pageDefaults } from "../lib/panel-schema.js";
@@ -144,7 +144,7 @@ export async function getRatingSummary() {
     }
   }
   const list = await getReviews();
-  if (!list.length) return { average: 0, count: 0 };
+  if (!list.length) return seedReviewsSummary;
   const sum = list.reduce((a, r) => a + Number(r.rating || 0), 0);
   return { average: Math.round((sum / list.length) * 10) / 10, count: list.length };
 }
