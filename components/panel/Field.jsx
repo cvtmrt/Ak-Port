@@ -1,4 +1,5 @@
 import { RichText } from "./RichText.jsx";
+import { apiUpload } from "../../lib/admin-api.js";
 
 // Şemadaki bir alanı tipine göre form girdisine çevirir.
 export function Field({ field, value, onChange }) {
@@ -6,15 +7,16 @@ export function Field({ field, value, onChange }) {
   const base =
     "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500";
 
-  // Fotoğraf seçimi: dosyayı tarayıcıda data URL'e çevirip önizler.
-  // (Salt frontend; gerçek dosya yükleme/saklama backend'e bağlanınca yapılır.)
-  function readImageFile(e) {
+  async function readImageFile(e) {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) { alert("Lütfen bir görsel dosyası seçin."); return; }
-    const reader = new FileReader();
-    reader.onload = () => onChange(reader.result);
-    reader.readAsDataURL(file);
+    try {
+      const result = await apiUpload(file);
+      onChange(result.url);
+    } catch (err) {
+      alert(`Görsel yüklenemedi: ${err.message}`);
+    }
   }
 
   const label = (

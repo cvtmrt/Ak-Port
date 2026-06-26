@@ -1,21 +1,48 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Field } from "./Field.jsx";
 import { homeSections, homeDefaults } from "../../lib/panel-schema.js";
+import { apiGetSettings, apiSaveSettings } from "../../lib/admin-api.js";
 
-// Anasayfayı sekmeler halinde düzenler (salt frontend; kalıcı kayıt backend ile).
 export function HomeEditor() {
   const [activeId, setActiveId] = useState(homeSections[0].id);
   const [data, setData] = useState(homeDefaults);
+  const [status, setStatus] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const section = homeSections.find((s) => s.id === activeId);
   const set = (key, value) => setData((d) => ({ ...d, [key]: value }));
+
+  useEffect(() => {
+    apiGetSettings()
+      .then((res) => setData(res.home || homeDefaults))
+      .catch((err) => setStatus(`Varsayılan anasayfa içeriği kullanılıyor: ${err.message}`));
+  }, []);
+
+  async function save() {
+    setSaving(true);
+    setStatus("");
+    try {
+      await apiSaveSettings({ home: data });
+      setStatus("Anasayfa kaydedildi.");
+    } catch (err) {
+      setStatus(`Kaydedilemedi: ${err.message}`);
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-bold text-slate-800">Anasayfa</h2>
-        <a href="/" target="_blank" rel="noreferrer" className="text-sm font-medium text-amber-600 hover:underline">Anasayfayı Aç ↗</a>
+        <div className="flex items-center gap-3">
+          <a href="/" target="_blank" rel="noreferrer" className="text-sm font-medium text-amber-600 hover:underline">Anasayfayı Aç ↗</a>
+          <button onClick={save} disabled={saving} className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-400 disabled:opacity-60">
+            {saving ? "Kaydediliyor..." : "Sunucuya Kaydet"}
+          </button>
+        </div>
       </div>
+      {status && <p className="mb-3 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">{status}</p>}
 
       {/* Bölüm sekmeleri */}
       <div className="mb-5 flex flex-wrap gap-2">
@@ -40,7 +67,7 @@ export function HomeEditor() {
 
       <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-500">
         Not: Öne çıkan ürünler, kategoriler ve amper listesi <strong>Ürünler</strong> bölümünden gelir.
-        Marka logoları ise sabittir. Yorumlar Google'dan otomatik çekilir.
+        Marka logoları <strong>Markalar</strong>, yorumlar <strong>Yorumlar</strong> ekranından yönetilir.
       </div>
     </div>
   );

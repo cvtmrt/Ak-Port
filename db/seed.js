@@ -1,10 +1,14 @@
 // Railway PostgreSQL'e tabloyu oluşturup ürünleri yükler.
 // Kullanım: DATABASE_URL ayarlı .env ile  ->  npm run db:seed
 import "dotenv/config";
+import fs from "fs";
+import path from "path";
 import { sql, hasDb } from "./index.js";
-import { products } from "./seed-data.js";
+import { products, categories } from "./seed-data.js";
 import { reviews } from "./reviews-data.js";
 import { posts } from "./posts-data.js";
+import { site, brandNames, districts } from "../lib/site.js";
+import { homeDefaults, designDefaults, pages } from "../lib/panel-schema.js";
 
 if (!hasDb) {
   console.error("HATA: DATABASE_URL tanımlı değil. .env dosyasına Railway bağlantı adresini ekleyin.");
@@ -12,6 +16,9 @@ if (!hasDb) {
 }
 
 async function run() {
+  const migration = fs.readFileSync(path.join(process.cwd(), "db/migrations/0001_live_admin.sql"), "utf8");
+  await sql.unsafe(migration);
+
   console.log("Tablo oluşturuluyor (yoksa)...");
   await sql`
     CREATE TABLE IF NOT EXISTS products (
@@ -109,6 +116,62 @@ async function run() {
   } else {
     console.log(`Blog tablosunda ${postCount} kayıt var, örnek yazı atlandı.`);
   }
+
+  console.log("Marka/kategori/bölge tabloları hazırlanıyor...");
+  for (const [index, name] of brandNames.entries()) {
+    const logo = `/images/brands/${name.toLocaleLowerCase("tr-TR").replaceAll("ı", "i")}.svg`;
+    await sql`
+      INSERT INTO brands (name, logo, sort_order, active)
+      VALUES (${name}, ${logo}, ${index}, true)
+      ON CONFLICT (name) DO UPDATE SET logo = EXCLUDED.logo, sort_order = EXCLUDED.sort_order, active = EXCLUDED.active;
+    `;
+  }
+
+  for (const [index, c] of categories.entries()) {
+    await sql`
+      INSERT INTO categories (slug, name, kind, icon, intro, sort_order, active)
+      VALUES (${c.slug}, ${c.name}, ${c.kind}, ${c.icon}, ${c.intro ?? null}, ${index}, true)
+      ON CONFLICT (slug) DO UPDATE SET
+        name = EXCLUDED.name, kind = EXCLUDED.kind, icon = EXCLUDED.icon, intro = EXCLUDED.intro,
+        sort_order = EXCLUDED.sort_order, active = EXCLUDED.active;
+    `;
+  }
+
+  for (const [index, d] of districts.entries()) {
+    await sql`
+      INSERT INTO districts (slug, name, title, intro, sort_order, active)
+      VALUES (${d.slug}, ${d.name}, ${d.title}, ${d.intro ?? null}, ${index}, true)
+      ON CONFLICT (slug) DO UPDATE SET
+        name = EXCLUDED.name, title = EXCLUDED.title, intro = EXCLUDED.intro,
+        sort_order = EXCLUDED.sort_order, active = EXCLUDED.active;
+    `;
+  }
+
+  console.log("İçerik sayfaları hazırlanıyor...");
+  for (const p of pages) {
+    await sql`
+      INSERT INTO content_pages (id, label, path, title, subtitle, content, data, published, updated_at)
+      VALUES (${p.id}, ${p.label}, ${p.path}, ${p.defaults.title ?? null}, ${p.defaults.subtitle ?? null}, ${p.defaults.content ?? null}, ${sql.json(p.defaults)}, true, now())
+      ON CONFLICT (id) DO NOTHING;
+    `;
+  }
+
+  console.log("Genel ayarlar hazırlanıyor...");
+  await sql`
+    INSERT INTO settings (key, value, updated_at)
+    VALUES ('site', ${sql.json(site)}, now())
+    ON CONFLICT (key) DO NOTHING;
+  `;
+  await sql`
+    INSERT INTO settings (key, value, updated_at)
+    VALUES ('home', ${sql.json(homeDefaults)}, now())
+    ON CONFLICT (key) DO NOTHING;
+  `;
+  await sql`
+    INSERT INTO settings (key, value, updated_at)
+    VALUES ('design', ${sql.json(designDefaults)}, now())
+    ON CONFLICT (key) DO NOTHING;
+  `;
 
   console.log("Tamamlandı ✓");
   await sql.end();

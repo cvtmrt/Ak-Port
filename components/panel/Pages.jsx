@@ -1,21 +1,54 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Field } from "./Field.jsx";
 import { pages } from "../../lib/panel-schema.js";
+import { apiGetCollection, apiSaveCollection } from "../../lib/admin-api.js";
 
-// Kurumsal/içerik sayfalarını düzenler (salt frontend; kalıcı kayıt backend ile).
 export function Pages() {
   const [activeId, setActiveId] = useState(pages[0].id);
   const [data, setData] = useState(() =>
-    Object.fromEntries(pages.map((p) => [p.id, { ...p.defaults }]))
+    Object.fromEntries(pages.map((p) => [p.id, { id: p.id, label: p.label, path: p.path, ...p.defaults, published: true }]))
   );
+  const [status, setStatus] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const page = pages.find((p) => p.id === activeId);
   const set = (key, value) =>
     setData((d) => ({ ...d, [activeId]: { ...d[activeId], [key]: value } }));
 
+  useEffect(() => {
+    apiGetCollection("pages")
+      .then((res) => {
+        const incoming = Object.fromEntries((res.items || []).map((p) => [p.id, p]));
+        setData(Object.fromEntries(pages.map((p) => [
+          p.id,
+          { id: p.id, label: p.label, path: p.path, ...p.defaults, ...(incoming[p.id] || {}), published: incoming[p.id]?.published ?? true },
+        ])));
+      })
+      .catch((err) => setStatus(`Varsayılan sayfa içerikleri kullanılıyor: ${err.message}`));
+  }, []);
+
+  async function save() {
+    setSaving(true);
+    setStatus("");
+    try {
+      await apiSaveCollection("pages", Object.values(data));
+      setStatus("Sayfalar kaydedildi.");
+    } catch (err) {
+      setStatus(`Kaydedilemedi: ${err.message}`);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div>
-      <h2 className="mb-4 text-lg font-bold text-slate-800">Sayfalar</h2>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-bold text-slate-800">Sayfalar</h2>
+        <button onClick={save} disabled={saving} className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-400 disabled:opacity-60">
+          {saving ? "Kaydediliyor..." : "Sunucuya Kaydet"}
+        </button>
+      </div>
+      {status && <p className="mb-3 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">{status}</p>}
 
       {/* Sayfa seçimi */}
       <div className="mb-5 flex flex-wrap gap-2">
@@ -32,8 +65,9 @@ export function Pages() {
 
       <div className="grid gap-4 rounded-xl border border-slate-200 bg-white p-5">
         {page.fields.map((f) => (
-          <Field key={f.key} field={f} value={data[activeId][f.key]} onChange={(v) => set(f.key, v)} />
+          <Field key={f.key} field={f} value={data[activeId]?.[f.key]} onChange={(v) => set(f.key, v)} />
         ))}
+        <Field field={{ key: "published", label: "Yayında", type: "boolean" }} value={data[activeId]?.published} onChange={(v) => set("published", v)} />
       </div>
       <p className="mt-2 text-xs text-slate-400">
         Önizleme: <a href={page.path} target="_blank" rel="noreferrer" className="text-amber-600 hover:underline">{page.path}</a>

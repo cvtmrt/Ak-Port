@@ -1,15 +1,42 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Field } from "./Field.jsx";
 import { designFields, designDefaults } from "../../lib/panel-schema.js";
+import { apiGetSettings, apiSaveSettings } from "../../lib/admin-api.js";
 
-// Salt frontend: renk ve hero metnini düzenle, canlı önizle. Kalıcı uygulama backend ile.
 export function Design() {
   const [d, setD] = useState(designDefaults);
+  const [status, setStatus] = useState("");
+  const [saving, setSaving] = useState(false);
   const set = (key, value) => setD((p) => ({ ...p, [key]: value }));
+
+  useEffect(() => {
+    apiGetSettings()
+      .then((res) => setD(res.design || designDefaults))
+      .catch((err) => setStatus(`Varsayılan tasarım kullanılıyor: ${err.message}`));
+  }, []);
+
+  async function save() {
+    setSaving(true);
+    setStatus("");
+    try {
+      await apiSaveSettings({ design: d });
+      setStatus("Tasarım ayarları kaydedildi.");
+    } catch (err) {
+      setStatus(`Kaydedilemedi: ${err.message}`);
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <div>
-      <h2 className="mb-4 text-lg font-bold text-slate-800">Tasarım</h2>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-bold text-slate-800">Tasarım</h2>
+        <button onClick={save} disabled={saving} className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-400 disabled:opacity-60">
+          {saving ? "Kaydediliyor..." : "Sunucuya Kaydet"}
+        </button>
+      </div>
+      {status && <p className="mb-3 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">{status}</p>}
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="grid gap-4 rounded-xl border border-slate-200 bg-white p-5">
           {designFields.map((f) => (
@@ -36,7 +63,7 @@ export function Design() {
               </button>
             </div>
           </div>
-          <p className="mt-2 text-xs text-slate-400">Önizleme anlıktır. Sitede kalıcı uygulanması backend ile yapılır.</p>
+          <p className="mt-2 text-xs text-slate-400">Önizleme anlıktır. Kaydedince public config üzerinden siteye uygulanır.</p>
         </div>
       </div>
     </div>

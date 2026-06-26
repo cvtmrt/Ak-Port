@@ -38,18 +38,20 @@ const trust = [
   { icon: BoltIcon, title: "Tüm Marka & Amper", text: "Mutlu, Varta, Bosch, İnci ve daha fazlası" },
 ];
 
-export function TrustBadges() {
+export function TrustBadges({ items = trust }) {
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-      {trust.map((t) => (
+      {items.map((t, index) => {
+        const Icon = t.icon || trust[index % trust.length]?.icon || CheckIcon;
+        return (
         <div key={t.title} className="flex items-start gap-3 rounded-xl border border-brand-dark/10 bg-white p-4">
-          <span className="rounded-lg bg-brand-gold/15 p-2 text-brand-gold"><t.icon /></span>
+          <span className="rounded-lg bg-brand-gold/15 p-2 text-brand-gold"><Icon /></span>
           <div>
             <div className="font-bold text-brand-dark">{t.title}</div>
             <div className="text-sm text-brand-navy/70">{t.text}</div>
           </div>
         </div>
-      ))}
+      );})}
     </div>
   );
 }
@@ -129,10 +131,14 @@ const brandLogos = [
   { name: "President", src: "/images/brands/president.svg" },
 ];
 
-export function BrandStrip() {
+export function BrandStrip({ brands = brandLogos }) {
+  const logos = brands.map((brand) => ({
+    name: brand.name,
+    src: brand.src || brand.logo,
+  })).filter((brand) => brand.name && brand.src);
   return (
     <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-5 sm:gap-x-14">
-      {brandLogos.map((l) => (
+      {logos.map((l) => (
         <img
           key={l.name}
           src={l.src}

@@ -4,6 +4,7 @@ import http from "http";
 import compression from "compression";
 import { renderPage } from "vike/server";
 import { buildSitemap, buildRobots } from "../lib/sitemap.js";
+import { mountAdminApi } from "./admin-api.js";
 import "dotenv/config";
 
 const isProduction = process.env.NODE_ENV === "production";
@@ -13,6 +14,8 @@ const root = process.cwd();
 async function startServer() {
   const app = express();
   app.use(compression());
+  app.use(express.json({ limit: "2mb" }));
+  mountAdminApi(app);
 
   // HMR websocket'i ayrı bir port yerine aynı HTTP sunucusu üzerinden çalışır
   // (proxy/preview arkasında ve tek portta sorunsuz çalışsın diye).
@@ -31,7 +34,12 @@ async function startServer() {
   }
 
   app.get("/robots.txt", (req, res) => {
-    res.type("text/plain").send(buildRobots());
+    buildRobots()
+      .then((robots) => res.type("text/plain").send(robots))
+      .catch((err) => {
+        console.error("robots hatası:", err);
+        res.status(500).send("robots üretilemedi");
+      });
   });
 
   app.get("/sitemap.xml", async (req, res) => {

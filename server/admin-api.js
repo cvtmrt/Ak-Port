@@ -1,0 +1,399 @@
+import crypto from "crypto";
+import express from "express";
+import fs from "fs";
+import path from "path";
+import multer from "multer";
+import { hasDb, sql } from "../db/index.js";
+import {
+  products as seedProducts,
+  categories as seedCategories,
+} from "../db/seed-data.js";
+import { posts as seedPosts } from "../db/posts-data.js";
+import { reviews as seedReviews } from "../db/reviews-data.js";
+import { site, brandNames, districts as seedDistricts } from "../lib/site.js";
+import { homeDefaults, designDefaults, pages as pageDefaults } from "../lib/panel-schema.js";
+
+const isProduction = process.env.NODE_ENV === "production";
+const uploadDir = process.env.UPLOAD_DIR || (isProduction ? "/data/uploads" : path.join(process.cwd(), "public/uploads"));
+const publicUploadBase = process.env.UPLOAD_PUBLIC_PATH || "/uploads";
+
+const defaultBrands = brandNames.map((name, index) => ({
+  name,
+  logo: `/images/brands/${slugifyAscii(name)}.svg`,
+  sortOrder: index,
+  active: true,
+}));
+
+const defaults = {
+  products: seedProducts,
+  posts: seedPosts,
+  reviews: seedReviews,
+  brands: defaultBrands,
+  categories: seedCategories.map((item, index) => ({ ...item, sortOrder: index, active: true })),
+  districts: seedDistricts.map((item, index) => ({ ...item, sortOrder: index, active: true })),
+  pages: pageDefaults.map((p) => ({ id: p.id, label: p.label, path: p.path, ...p.defaults, published: true })),
+};
+
+function slugifyAscii(value) {
+  return String(value || "")
+    .toLocaleLowerCase("tr-TR")
+    .replaceAll("ı", "i")
+    .replaceAll("ğ", "g")
+    .replaceAll("ü", "u")
+    .replaceAll("ş", "s")
+    .replaceAll("ö", "o")
+    .replaceAll("ç", "c")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function sessionValue() {
+  const secret = process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_PASSWORD || "dev-admin-session";
+  return crypto.createHash("sha256").update(`akuport:${secret}`).digest("hex");
+}
+
+function parseCookies(header = "") {
+  return Object.fromEntries(
+    header
+      .split(";")
+      .map((part) => part.trim().split("="))
+      .filter(([key, value]) => key && value)
+      .map(([key, value]) => [key, decodeURIComponent(value)])
+  );
+}
+
+function requireAdmin(req, res, next) {
+  const cookies = parseCookies(req.headers.cookie);
+  if (cookies.akp_admin === sessionValue()) return next();
+  res.status(401).json({ ok: false, error: "Yetkisiz" });
+}
+
+function requireDb(res) {
+  if (hasDb) return true;
+  res.status(503).json({ ok: false, error: "DATABASE_URL tanımlı değil; kalıcı kayıt için PostgreSQL bağlayın." });
+  return false;
+}
+
+function toInt(value, fallback = null) {
+  if (value === "" || value === undefined || value === null) return fallback;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function toBool(value, fallback = false) {
+  if (value === undefined || value === null || value === "") return fallback;
+  return Boolean(value);
+}
+
+function normalizeProduct(p) {
+  return {
+    slug: p.slug,
+    name: p.name,
+    brand: p.brand || "",
+    category: p.category || "otomobil",
+    technology: p.technology || "standart",
+    amper: toInt(p.amper, 0),
+    volt: toInt(p.volt, 12),
+    cca: toInt(p.cca),
+    price: p.price === "" || p.price === undefined ? null : String(p.price),
+    stock: toBool(p.stock, true),
+    productCode: p.productCode || null,
+    image: p.image || null,
+    images: Array.isArray(p.images) ? p.images : [],
+    shortDesc: p.shortDesc || null,
+    description: p.description || null,
+    featured: toBool(p.featured, false),
+  };
+}
+
+function normalizePost(p) {
+  return {
+    slug: p.slug,
+    title: p.title,
+    excerpt: p.excerpt || null,
+    content: p.content || null,
+    cover: p.cover || null,
+    author: p.author || "AKÜPORT",
+    tags: Array.isArray(p.tags) ? p.tags : [],
+    published: toBool(p.published, true),
+    publishedAt: p.publishedAt || null,
+  };
+}
+
+function normalizeReview(r) {
+  return {
+    id: toInt(r.id),
+    author: r.author,
+    rating: toInt(r.rating, 5),
+    text: r.text || null,
+    time: r.time || null,
+    avatar: r.avatar || null,
+    source: r.source || "manuel",
+    approved: toBool(r.approved, true),
+  };
+}
+
+function normalizeBrand(b, index) {
+  return {
+    name: b.name,
+    logo: b.logo || null,
+    sortOrder: toInt(b.sortOrder, index),
+    active: toBool(b.active, true),
+  };
+}
+
+function normalizeCategory(c, index) {
+  return {
+    slug: c.slug,
+    name: c.name,
+    kind: c.kind || "category",
+    icon: c.icon || "battery",
+    intro: c.intro || null,
+    sortOrder: toInt(c.sortOrder, index),
+    active: toBool(c.active, true),
+  };
+}
+
+function normalizeDistrict(d, index) {
+  return {
+    slug: d.slug,
+    name: d.name,
+    title: d.title || `${d.name} Akü`,
+    intro: d.intro || null,
+    sortOrder: toInt(d.sortOrder, index),
+    active: toBool(d.active, true),
+  };
+}
+
+function normalizePage(p) {
+  const data = { ...(p.data || {}) };
+  for (const [key, value] of Object.entries(p)) {
+    if (!["id", "label", "path", "title", "subtitle", "content", "published", "data"].includes(key)) {
+      data[key] = value;
+    }
+  }
+  return {
+    id: p.id,
+    label: p.label || p.id,
+    path: p.path,
+    title: p.title || null,
+    subtitle: p.subtitle || null,
+    content: p.content || null,
+    data,
+    published: toBool(p.published, true),
+  };
+}
+
+const readers = {
+  products: async () => sql`SELECT id, slug, name, brand, category, technology, amper, volt, cca, price, stock, product_code AS "productCode", image, images, short_desc AS "shortDesc", description, featured FROM products ORDER BY id`,
+  posts: async () => sql`SELECT id, slug, title, excerpt, content, cover, author, tags, published, published_at AS "publishedAt" FROM posts ORDER BY published_at DESC NULLS LAST, id DESC`,
+  reviews: async () => sql`SELECT id, author, rating, text, time, avatar, source, approved FROM reviews ORDER BY id DESC`,
+  brands: async () => sql`SELECT id, name, logo, sort_order AS "sortOrder", active FROM brands ORDER BY sort_order, name`,
+  categories: async () => sql`SELECT id, slug, name, kind, icon, intro, sort_order AS "sortOrder", active FROM categories ORDER BY sort_order, name`,
+  districts: async () => sql`SELECT id, slug, name, title, intro, sort_order AS "sortOrder", active FROM districts ORDER BY sort_order, name`,
+  pages: async () => {
+    const rows = await sql`SELECT id, label, path, title, subtitle, content, data, published FROM content_pages ORDER BY label`;
+    return rows.map((p) => ({ ...p, ...(p.data || {}) }));
+  },
+};
+
+const writers = {
+  products: async (items) => {
+    await sql`DELETE FROM products`;
+    for (const item of items.map(normalizeProduct)) {
+      await sql`
+        INSERT INTO products (slug, name, brand, category, technology, amper, volt, cca, price, stock, product_code, image, images, short_desc, description, featured)
+        VALUES (${item.slug}, ${item.name}, ${item.brand}, ${item.category}, ${item.technology}, ${item.amper}, ${item.volt}, ${item.cca}, ${item.price}, ${item.stock}, ${item.productCode}, ${item.image}, ${item.images}, ${item.shortDesc}, ${item.description}, ${item.featured})
+      `;
+    }
+  },
+  posts: async (items) => {
+    await sql`DELETE FROM posts`;
+    for (const item of items.map(normalizePost)) {
+      await sql`
+        INSERT INTO posts (slug, title, excerpt, content, cover, author, tags, published, published_at)
+        VALUES (${item.slug}, ${item.title}, ${item.excerpt}, ${item.content}, ${item.cover}, ${item.author}, ${item.tags}, ${item.published}, ${item.publishedAt})
+      `;
+    }
+  },
+  reviews: async (items) => {
+    await sql`DELETE FROM reviews`;
+    for (const item of items.map(normalizeReview)) {
+      await sql`
+        INSERT INTO reviews (author, rating, text, time, avatar, source, approved)
+        VALUES (${item.author}, ${item.rating}, ${item.text}, ${item.time}, ${item.avatar}, ${item.source}, ${item.approved})
+      `;
+    }
+  },
+  brands: async (items) => {
+    await sql`DELETE FROM brands`;
+    for (const item of items.map(normalizeBrand)) {
+      await sql`
+        INSERT INTO brands (name, logo, sort_order, active)
+        VALUES (${item.name}, ${item.logo}, ${item.sortOrder}, ${item.active})
+      `;
+    }
+  },
+  categories: async (items) => {
+    await sql`DELETE FROM categories`;
+    for (const [index, raw] of items.entries()) {
+      const item = normalizeCategory(raw, index);
+      await sql`
+        INSERT INTO categories (slug, name, kind, icon, intro, sort_order, active)
+        VALUES (${item.slug}, ${item.name}, ${item.kind}, ${item.icon}, ${item.intro}, ${item.sortOrder}, ${item.active})
+      `;
+    }
+  },
+  districts: async (items) => {
+    await sql`DELETE FROM districts`;
+    for (const [index, raw] of items.entries()) {
+      const item = normalizeDistrict(raw, index);
+      await sql`
+        INSERT INTO districts (slug, name, title, intro, sort_order, active)
+        VALUES (${item.slug}, ${item.name}, ${item.title}, ${item.intro}, ${item.sortOrder}, ${item.active})
+      `;
+    }
+  },
+  pages: async (items) => {
+    await sql`DELETE FROM content_pages`;
+    for (const item of items.map(normalizePage)) {
+      await sql`
+        INSERT INTO content_pages (id, label, path, title, subtitle, content, data, published, updated_at)
+        VALUES (${item.id}, ${item.label}, ${item.path}, ${item.title}, ${item.subtitle}, ${item.content}, ${sql.json(item.data)}, ${item.published}, now())
+      `;
+    }
+  },
+};
+
+async function readSetting(key, fallback) {
+  if (!hasDb) return fallback;
+  const rows = await sql`SELECT value FROM settings WHERE key = ${key}`;
+  return rows[0]?.value ?? fallback;
+}
+
+async function writeSetting(key, value) {
+  await sql`
+    INSERT INTO settings (key, value, updated_at)
+    VALUES (${key}, ${sql.json(value)}, now())
+    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
+  `;
+}
+
+function uploadMiddleware() {
+  fs.mkdirSync(uploadDir, { recursive: true });
+  const storage = multer.diskStorage({
+    destination: uploadDir,
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname || "").toLowerCase();
+      cb(null, `${Date.now()}-${crypto.randomBytes(6).toString("hex")}${ext}`);
+    },
+  });
+  return multer({
+    storage,
+    limits: { fileSize: Number(process.env.UPLOAD_MAX_BYTES || 5 * 1024 * 1024) },
+    fileFilter: (req, file, cb) => {
+      cb(null, file.mimetype?.startsWith("image/"));
+    },
+  });
+}
+
+export function mountAdminApi(app) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+  app.use(publicUploadBase, express.static(uploadDir));
+
+  app.get("/api/public/config", async (req, res) => {
+    try {
+      const [siteSettings, design, home, brands, districts] = await Promise.all([
+        readSetting("site", site),
+        readSetting("design", designDefaults),
+        readSetting("home", homeDefaults),
+        hasDb ? readers.brands().then((rows) => rows.filter((b) => b.active)).catch(() => defaultBrands) : defaultBrands,
+        hasDb ? readers.districts().then((rows) => rows.filter((d) => d.active)).catch(() => defaults.districts) : defaults.districts,
+      ]);
+      res.json({ site: siteSettings, design, home, brands, districts });
+    } catch (err) {
+      res.status(500).json({ ok: false, error: err.message });
+    }
+  });
+
+  app.get("/api/admin/health", (req, res) => {
+    res.json({ ok: true, db: hasDb, uploadDir, uploadPath: publicUploadBase });
+  });
+
+  app.post("/api/admin/login", (req, res) => {
+    const password = req.body?.password || "";
+    if (isProduction && !process.env.ADMIN_PASSWORD) {
+      res.status(500).json({ ok: false, error: "ADMIN_PASSWORD production ortamında zorunlu." });
+      return;
+    }
+    if (process.env.ADMIN_PASSWORD && password !== process.env.ADMIN_PASSWORD) {
+      res.status(401).json({ ok: false, error: "Parola hatalı." });
+      return;
+    }
+    const secure = isProduction ? "; Secure" : "";
+    res.setHeader("Set-Cookie", `akp_admin=${encodeURIComponent(sessionValue())}; HttpOnly; SameSite=Lax; Path=/; Max-Age=604800${secure}`);
+    res.json({ ok: true });
+  });
+
+  app.post("/api/admin/logout", requireAdmin, (req, res) => {
+    res.setHeader("Set-Cookie", "akp_admin=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0");
+    res.status(204).end();
+  });
+
+  app.get("/api/admin/settings", requireAdmin, async (req, res) => {
+    res.json({
+      site: await readSetting("site", site),
+      design: await readSetting("design", designDefaults),
+      home: await readSetting("home", homeDefaults),
+    });
+  });
+
+  app.put("/api/admin/settings", requireAdmin, async (req, res) => {
+    if (!requireDb(res)) return;
+    const { site: siteSettings, design, home } = req.body || {};
+    if (siteSettings) await writeSetting("site", siteSettings);
+    if (design) await writeSetting("design", design);
+    if (home) await writeSetting("home", home);
+    res.json({ ok: true });
+  });
+
+  app.get("/api/admin/:collection", requireAdmin, async (req, res) => {
+    const collection = req.params.collection;
+    if (!readers[collection]) {
+      res.status(404).json({ ok: false, error: "Koleksiyon bulunamadı." });
+      return;
+    }
+    if (!hasDb) {
+      res.json({ items: defaults[collection] || [] });
+      return;
+    }
+    res.json({ items: await readers[collection]() });
+  });
+
+  app.put("/api/admin/:collection", requireAdmin, async (req, res) => {
+    const collection = req.params.collection;
+    if (!writers[collection]) {
+      res.status(404).json({ ok: false, error: "Koleksiyon bulunamadı." });
+      return;
+    }
+    if (!requireDb(res)) return;
+    const items = Array.isArray(req.body?.items) ? req.body.items : [];
+    await writers[collection](items);
+    res.json({ ok: true, count: items.length });
+  });
+
+  app.post("/api/admin/upload", requireAdmin, uploadMiddleware().single("file"), async (req, res) => {
+    if (!req.file) {
+      res.status(400).json({ ok: false, error: "Görsel dosyası alınamadı." });
+      return;
+    }
+    const url = `${publicUploadBase}/${req.file.filename}`;
+    if (hasDb) {
+      await sql`
+        INSERT INTO assets (filename, original_name, mime_type, size, url)
+        VALUES (${req.file.filename}, ${req.file.originalname}, ${req.file.mimetype}, ${req.file.size}, ${url})
+      `;
+    }
+    res.json({ ok: true, url });
+  });
+}

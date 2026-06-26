@@ -1,3 +1,4 @@
+import { useData } from "vike-react/useData";
 import { site, brandNames } from "../../lib/site.js";
 import { CheckIcon } from "../../components/icons.jsx";
 import { Breadcrumbs, SectionTitle, CtaBand } from "../../components/blocks.jsx";
@@ -12,22 +13,14 @@ const values = [
 ];
 
 export default function Page() {
+  const { page } = useData();
   return (
     <>
       <Breadcrumbs items={[{ name: "Anasayfa", url: "/" }, { name: "Hakkımızda", url: "/hakkimizda" }]} />
 
       <section className="container-x py-10">
-        <SectionTitle kicker="Hakkımızda" title={site.legalName} />
-        <div className="max-w-3xl space-y-4 text-brand-navy/80">
-          <p>
-            {site.name}, Ankara İncek ve Gölbaşı bölgesinde akü satışı, yerinde montaj ve acil akü hizmeti sunan bir akü marketidir.
-            Otomobil, ticari araç, kamyon ve motosiklet aküsünde tüm marka ve amperleri stoğumuzda bulundururuz.
-          </p>
-          <p>
-            Amacımız; aracınız yolda kaldığında en hızlı şekilde yanınızda olmak ve doğru aküyü doğru fiyata, garantili biçimde sunmaktır.
-            "Aküm bitti" dediğiniz anda bulunduğunuz yere gelir, yeni aküyü takıp eski akünüzü takas ederiz.
-          </p>
-        </div>
+        <SectionTitle kicker="Hakkımızda" title={page?.title || site.legalName} />
+        <div className="prose max-w-3xl text-brand-navy/80" dangerouslySetInnerHTML={{ __html: page?.content || "" }} />
 
         <div className="mt-8 grid gap-3 sm:grid-cols-2">
           {values.map((v) => (

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Field } from "./Field.jsx";
+import { apiGetCollection, apiSaveCollection } from "../../lib/admin-api.js";
 
 // Salt frontend CRUD ekranı. Veriler bellek içinde (oturum boyunca) tutulur;
 // kalıcı kayıt backend'e bağlanınca yapılır. Değişiklikler sayfa yenilenince sıfırlanır.
@@ -20,10 +21,27 @@ function clone(v) {
 export function Crud({ schema }) {
   const [items, setItems] = useState([]);
   const [editing, setEditing] = useState(null); // {item, index|null}
+  const [status, setStatus] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setItems(clone(schema.defaults));
+    let alive = true;
+    setStatus("Yükleniyor...");
+    apiGetCollection(schema.key)
+      .then((res) => {
+        if (alive) setItems(clone(res.items || schema.defaults));
+      })
+      .catch((err) => {
+        if (alive) {
+          setItems(clone(schema.defaults));
+          setStatus(`Varsayılan veri kullanılıyor: ${err.message}`);
+        }
+      })
+      .finally(() => {
+        if (alive) setStatus("");
+      });
     setEditing(null);
+    return () => { alive = false; };
   }, [schema]);
 
   function startNew() {
@@ -50,6 +68,19 @@ export function Crud({ schema }) {
     }
     setItems(editing.index === null ? [...items, it] : items.map((x, i) => (i === editing.index ? it : x)));
     setEditing(null);
+  }
+
+  async function saveAll() {
+    setSaving(true);
+    setStatus("");
+    try {
+      await apiSaveCollection(schema.key, items);
+      setStatus("Sunucuya kaydedildi.");
+    } catch (err) {
+      setStatus(`Kaydedilemedi: ${err.message}`);
+    } finally {
+      setSaving(false);
+    }
   }
 
   if (editing) {
@@ -84,8 +115,14 @@ export function Crud({ schema }) {
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-bold text-slate-800">{schema.label} <span className="text-slate-400">({items.length})</span></h2>
-        <button onClick={startNew} className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-400">+ Yeni {schema.singular}</button>
+        <div className="flex gap-2">
+          <button onClick={saveAll} disabled={saving} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-60">
+            {saving ? "Kaydediliyor..." : "Sunucuya Kaydet"}
+          </button>
+          <button onClick={startNew} className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-400">+ Yeni {schema.singular}</button>
+        </div>
       </div>
+      {status && <p className="mb-3 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">{status}</p>}
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">

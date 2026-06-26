@@ -1,18 +1,23 @@
+import { useData } from "vike-react/useData";
 import { Breadcrumbs, CtaBand } from "../../../components/blocks.jsx";
 
 export default function Page() {
+  const { page } = useData();
   return (
     <>
       <Breadcrumbs items={[{ name: "Anasayfa", url: "/" }, { name: "Bilgi", url: "/bilgi/aku-nedir" }, { name: "Akü Nedir?", url: "/bilgi/aku-nedir" }]} />
 
       <section className="bg-brand-dark text-white">
         <div className="container-x py-10">
-          <h1 className="text-3xl font-extrabold sm:text-4xl">Akü Nedir? Nasıl Çalışır?</h1>
+          <h1 className="text-3xl font-extrabold sm:text-4xl">{page?.title || "Akü Nedir? Nasıl Çalışır?"}</h1>
           <p className="mt-2 max-w-2xl text-white/80">Aracınızın kalbi olan akünün ne işe yaradığını, çeşitlerini ve doğru akü seçimini sade bir dille anlattık.</p>
         </div>
       </section>
 
       <section className="container-x py-10">
+        {page?.content ? (
+          <article className="article" dangerouslySetInnerHTML={{ __html: page.content }} />
+        ) : (
         <article className="article">
           <p>Akü, aracınızın marş motorunu çalıştıran ve motor çalışmadığı sürece elektronik sistemlere enerji sağlayan, şarj edilebilir bir enerji deposudur. Kimyasal enerjiyi elektrik enerjisine çevirerek aracı çalıştırır; motor çalışırken ise alternatör tarafından yeniden şarj edilir.</p>
 
@@ -36,6 +41,7 @@ export default function Page() {
           <h2>Doğru Aküyü Nasıl Seçerim?</h2>
           <p>En kolayı: aracınızın marka ve modelini bize söyleyin, uygun amper ve teknolojiyi önerelim. Dilerseniz <a href="/aku-bulucu">Akü Bulucu</a> aracımızı kullanarak saniyeler içinde öneri alabilir, ardından <a href="/urunler">ürünlerimizi</a> inceleyebilirsiniz.</p>
         </article>
+        )}
       </section>
 
       <CtaBand />

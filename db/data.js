@@ -1,14 +1,31 @@
 // Veri erişim katmanı. DB bağlıysa Railway'den, değilse seed verisinden okur.
 // Türetilmiş sorgular JS tarafında filtrelenir (katalog boyutu için yeterli).
 import { db, hasDb } from "./index.js";
-import { products as productsTable, reviews as reviewsTable, posts as postsTable } from "./schema.js";
+import {
+  products as productsTable,
+  reviews as reviewsTable,
+  posts as postsTable,
+  brands as brandsTable,
+  categories as categoriesTable,
+  districts as districtsTable,
+  contentPages as contentPagesTable,
+  settings as settingsTable,
+} from "./schema.js";
 import {
   products as seedProducts,
   categories as seedCategories,
 } from "./seed-data.js";
 import { reviews as seedReviews } from "./reviews-data.js";
 import { posts as seedPosts } from "./posts-data.js";
-import { eq, desc } from "drizzle-orm";
+import { site, brandNames, districts as seedDistricts } from "../lib/site.js";
+import { homeDefaults, designDefaults, pages as pageDefaults } from "../lib/panel-schema.js";
+import { eq, desc, asc } from "drizzle-orm";
+
+const seedBrands = brandNames.map((name) => ({
+  name,
+  logo: `/images/brands/${name.toLocaleLowerCase("tr-TR").replace("ı", "i").replace("İ", "i")}.svg`,
+  active: true,
+}));
 
 async function loadProducts() {
   if (!hasDb) return seedProducts;
@@ -44,12 +61,23 @@ export async function getByAmper(amper) {
   return (await loadProducts()).filter((p) => Number(p.amper) === a);
 }
 
-export function getCategories() {
-  return seedCategories;
+export async function getCategories() {
+  if (!hasDb) return seedCategories;
+  try {
+    const rows = await db
+      .select()
+      .from(categoriesTable)
+      .where(eq(categoriesTable.active, true))
+      .orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
+    return rows.length ? rows : seedCategories;
+  } catch (err) {
+    console.error("[db] Kategoriler okunamadı, seed verisine düşülüyor:", err.message);
+    return seedCategories;
+  }
 }
 
-export function getCategory(slug) {
-  return seedCategories.find((c) => c.slug === slug) || null;
+export async function getCategory(slug) {
+  return (await getCategories()).find((c) => c.slug === slug) || null;
 }
 
 export async function getAmperValues() {
@@ -58,7 +86,37 @@ export async function getAmperValues() {
 }
 
 export async function getBrands() {
-  return [...new Set((await loadProducts()).map((p) => p.brand))];
+  if (!hasDb) return seedBrands;
+  try {
+    const rows = await db
+      .select()
+      .from(brandsTable)
+      .where(eq(brandsTable.active, true))
+      .orderBy(asc(brandsTable.sortOrder), asc(brandsTable.name));
+    return rows.length ? rows : seedBrands;
+  } catch (err) {
+    console.error("[db] Markalar okunamadı, seed verisine düşülüyor:", err.message);
+    return seedBrands;
+  }
+}
+
+export async function getDistricts() {
+  if (!hasDb) return seedDistricts;
+  try {
+    const rows = await db
+      .select()
+      .from(districtsTable)
+      .where(eq(districtsTable.active, true))
+      .orderBy(asc(districtsTable.sortOrder), asc(districtsTable.name));
+    return rows.length ? rows : seedDistricts;
+  } catch (err) {
+    console.error("[db] Bölgeler okunamadı, seed verisine düşülüyor:", err.message);
+    return seedDistricts;
+  }
+}
+
+export async function getDistrict(slug) {
+  return (await getDistricts()).find((d) => d.slug === slug) || null;
 }
 
 // Onaylı yorumlar. DB varsa oradan, yoksa örnek veriden.
@@ -103,6 +161,62 @@ export async function getPostBySlug(slug) {
 
 export async function getRecentPosts(limit = 3, excludeSlug) {
   return (await getPosts()).filter((p) => p.slug !== excludeSlug).slice(0, limit);
+}
+
+async function getSetting(key, fallback) {
+  if (!hasDb) return fallback;
+  try {
+    const rows = await db.select().from(settingsTable).where(eq(settingsTable.key, key)).limit(1);
+    return rows[0]?.value ?? fallback;
+  } catch (err) {
+    console.error(`[db] ${key} ayarı okunamadı, varsayılana düşülüyor:`, err.message);
+    return fallback;
+  }
+}
+
+export async function getSiteSettings() {
+  return getSetting("site", site);
+}
+
+export async function getHomeContent() {
+  return getSetting("home", homeDefaults);
+}
+
+export async function getDesignSettings() {
+  return getSetting("design", designDefaults);
+}
+
+export async function getContentPages() {
+  const defaults = pageDefaults.map((p) => ({ id: p.id, label: p.label, path: p.path, ...p.defaults }));
+  if (!hasDb) return defaults;
+  try {
+    const rows = await db
+      .select()
+      .from(contentPagesTable)
+      .where(eq(contentPagesTable.published, true))
+      .orderBy(asc(contentPagesTable.label));
+    return rows.length
+      ? rows.map((p) => ({ id: p.id, label: p.label, path: p.path, title: p.title, subtitle: p.subtitle, content: p.content, ...(p.data || {}) }))
+      : defaults;
+  } catch (err) {
+    console.error("[db] Sayfalar okunamadı, varsayılana düşülüyor:", err.message);
+    return defaults;
+  }
+}
+
+export async function getContentPage(idOrPath) {
+  return (await getContentPages()).find((p) => p.id === idOrPath || p.path === idOrPath) || null;
+}
+
+export async function getPublicConfig() {
+  const [siteSettings, design, home, brands, districts] = await Promise.all([
+    getSiteSettings(),
+    getDesignSettings(),
+    getHomeContent(),
+    getBrands(),
+    getDistricts(),
+  ]);
+  return { site: siteSettings, design, home, brands, districts };
 }
 
 export async function getRelated(product, limit = 4) {

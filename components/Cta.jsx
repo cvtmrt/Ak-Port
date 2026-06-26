@@ -1,20 +1,23 @@
 import { site } from "../lib/site.js";
+import { usePublicConfig } from "../lib/public-config-client.js";
 import { PhoneIcon, WhatsappIcon } from "./icons.jsx";
 
 const waLink = (text) =>
   `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(text || "Merhaba, akü hakkında bilgi almak istiyorum.")}`;
 
 export function CallButton({ className = "", label = "Hemen Ara" }) {
+  const { site: currentSite } = usePublicConfig();
   return (
-    <a href={`tel:${site.phoneIntl}`} className={`btn btn-gold ${className}`}>
-      <PhoneIcon /> {label} · {site.phone}
+    <a href={`tel:${currentSite.phoneIntl}`} className={`btn btn-gold ${className}`}>
+      <PhoneIcon /> {label} · {currentSite.phone}
     </a>
   );
 }
 
 export function WhatsappButton({ className = "", text, label = "WhatsApp" }) {
+  const { site: currentSite } = usePublicConfig();
   return (
-    <a href={waLink(text)} target="_blank" rel="noopener noreferrer" className={`btn btn-dark ${className}`}>
+    <a href={`https://wa.me/${currentSite.whatsapp}?text=${encodeURIComponent(text || "Merhaba, akü hakkında bilgi almak istiyorum.")}`} target="_blank" rel="noopener noreferrer" className={`btn btn-dark ${className}`}>
       <WhatsappIcon /> {label}
     </a>
   );
@@ -22,10 +25,11 @@ export function WhatsappButton({ className = "", text, label = "WhatsApp" }) {
 
 // Sol altta sabit yüzen WhatsApp butonu (tüm ekranlarda).
 export function FloatingActions() {
+  const { site: currentSite } = usePublicConfig();
   return (
     <>
       <a
-        href={waLink()}
+        href={`https://wa.me/${currentSite.whatsapp}?text=${encodeURIComponent("Merhaba, akü hakkında bilgi almak istiyorum.")}`}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="WhatsApp ile yaz"
@@ -38,7 +42,7 @@ export function FloatingActions() {
       </a>
       {/* Mobilde hızlı arama butonu (sağ alt) */}
       <a
-        href={`tel:${site.phoneIntl}`}
+        href={`tel:${currentSite.phoneIntl}`}
         aria-label="Telefon ile ara"
         className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-brand-gold text-brand-dark shadow-lg shadow-black/20 transition-transform hover:scale-105 md:hidden"
       >

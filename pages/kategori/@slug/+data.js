@@ -3,7 +3,7 @@ import { render } from "vike/abort";
 
 export async function data(pageContext) {
   const slug = pageContext.routeParams.slug;
-  const category = getCategory(slug);
+  const category = await getCategory(slug);
   if (!category) throw render(404, "Kategori bulunamadı");
   const [products, amper] = await Promise.all([getByCategory(slug), getAmperValues()]);
   return { category, products, amper };

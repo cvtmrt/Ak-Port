@@ -1,4 +1,4 @@
-import { site } from "../lib/site.js";
+import { usePublicConfig } from "../lib/public-config-client.js";
 import { PhoneIcon, ClockIcon, MenuIcon, BoltIcon } from "../components/icons.jsx";
 
 const bilgi = [
@@ -35,13 +35,14 @@ function Logo() {
 }
 
 export function Header() {
+  const { site: currentSite } = usePublicConfig();
   return (
     <header className="sticky top-0 z-40 bg-brand-dark text-white shadow-md">
       {/* Üst bilgi şeridi */}
       <div className="hidden border-b border-white/10 bg-brand-darker text-xs lg:block">
         <div className="container-x flex items-center justify-between py-1.5 text-white/70">
-          <span className="flex items-center gap-1.5"><ClockIcon width={14} height={14} /> {site.hours.text}</span>
-          <span>{site.serviceScope}</span>
+          <span className="flex items-center gap-1.5"><ClockIcon width={14} height={14} /> {currentSite.hours?.text}</span>
+          <span>{currentSite.serviceScope}</span>
         </div>
       </div>
 
@@ -74,8 +75,8 @@ export function Header() {
           )}
         </nav>
 
-        <a href={`tel:${site.phoneIntl}`} className="hidden items-center gap-2 rounded-lg bg-brand-gold px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-amber lg:inline-flex">
-          <PhoneIcon width={16} height={16} /> {site.phone}
+        <a href={`tel:${currentSite.phoneIntl}`} className="hidden items-center gap-2 rounded-lg bg-brand-gold px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-amber lg:inline-flex">
+          <PhoneIcon width={16} height={16} /> {currentSite.phone}
         </a>
 
         {/* Mobil menü (JS gerektirmez) */}
@@ -100,8 +101,8 @@ export function Header() {
                 </a>
               )
             )}
-            <a href={`tel:${site.phoneIntl}`} className="mt-2 block rounded bg-brand-gold px-3 py-2 text-center text-sm font-bold text-brand-dark">
-              {site.phone}
+            <a href={`tel:${currentSite.phoneIntl}`} className="mt-2 block rounded bg-brand-gold px-3 py-2 text-center text-sm font-bold text-brand-dark">
+              {currentSite.phone}
             </a>
           </div>
         </details>

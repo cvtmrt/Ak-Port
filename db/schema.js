@@ -6,6 +6,7 @@ import {
   integer,
   numeric,
   boolean,
+  jsonb,
   timestamp,
 } from "drizzle-orm/pg-core";
 
@@ -59,5 +60,66 @@ export const products = pgTable("products", {
   shortDesc: text("short_desc"),
   description: text("description"),
   featured: boolean("featured").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const brands = pgTable("brands", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  logo: text("logo"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const categories = pgTable("categories", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  kind: text("kind").notNull().default("category"),
+  icon: text("icon").notNull().default("battery"),
+  intro: text("intro"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const districts = pgTable("districts", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  title: text("title").notNull(),
+  intro: text("intro"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const contentPages = pgTable("content_pages", {
+  id: text("id").primaryKey(),
+  label: text("label").notNull(),
+  path: text("path").notNull().unique(),
+  title: text("title"),
+  subtitle: text("subtitle"),
+  content: text("content"),
+  data: jsonb("data").notNull().default({}),
+  published: boolean("published").notNull().default(true),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const settings = pgTable("settings", {
+  key: text("key").primaryKey(),
+  value: jsonb("value").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const assets = pgTable("assets", {
+  id: serial("id").primaryKey(),
+  filename: text("filename").notNull(),
+  originalName: text("original_name"),
+  mimeType: text("mime_type"),
+  size: integer("size"),
+  url: text("url").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });

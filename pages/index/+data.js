@@ -1,17 +1,22 @@
-import { getFeatured, getCategories, getAmperValues, getReviews, getRatingSummary } from "../../db/data.js";
+import { getFeatured, getCategories, getAmperValues, getReviews, getRatingSummary, getHomeContent, getBrands } from "../../db/data.js";
 
 export async function data() {
-  const [featured, amper, reviews, ratingSummary] = await Promise.all([
+  const [featured, categories, amper, reviews, ratingSummary, home, brands] = await Promise.all([
     getFeatured(),
+    getCategories(),
     getAmperValues(),
     getReviews(),
     getRatingSummary(),
+    getHomeContent(),
+    getBrands(),
   ]);
   return {
     featured,
-    categories: getCategories(),
+    categories,
     amper,
     reviews,
     ratingSummary,
+    home,
+    brands,
   };
 }
