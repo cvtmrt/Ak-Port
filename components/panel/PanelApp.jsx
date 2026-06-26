@@ -95,10 +95,6 @@ function Dashboard({ onGo }) {
           </button>
         ))}
       </div>
-      <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-        Değişiklikler her ekranda <strong>Sunucuya Kaydet</strong> ile PostgreSQL'e yazılır.
-        Görseller Railway volume üzerindeki upload klasörüne kaydedilir.
-      </div>
     </div>
   );
 }
