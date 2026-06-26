@@ -1,0 +1,63 @@
+// Drizzle ORM şeması — Railway PostgreSQL tabloları.
+import {
+  pgTable,
+  serial,
+  text,
+  integer,
+  numeric,
+  boolean,
+  timestamp,
+} from "drizzle-orm/pg-core";
+
+// Blog yazıları — panel/CMS doldurur. content alanı HTML tutar.
+export const posts = pgTable("posts", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  excerpt: text("excerpt"), // kısa özet (liste + meta description)
+  content: text("content"), // HTML gövde
+  cover: text("cover"), // kapak görseli yolu
+  author: text("author").notNull().default("AKÜPORT"),
+  tags: text("tags").array(),
+  published: boolean("published").notNull().default(true),
+  publishedAt: text("published_at"), // "YYYY-MM-DD"
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Yorumlar tablosu — alan adları Google Places review verisiyle uyumlu,
+// böylece backend ister panelden ister Places API'den kolayca doldurur.
+export const reviews = pgTable("reviews", {
+  id: serial("id").primaryKey(),
+  author: text("author").notNull(), // Google: author_name
+  rating: integer("rating").notNull(), // 1-5
+  text: text("text"), // yorum metni
+  time: text("time"), // Google: relative_time_description ("2 hafta önce")
+  avatar: text("avatar"), // Google: profile_photo_url (opsiyonel)
+  source: text("source").notNull().default("google"), // google | manuel
+  approved: boolean("approved").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const products = pgTable("products", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  brand: text("brand").notNull(),
+  // Kategori/araç tipi: otomobil, ticari, kamyon, motosiklet, deniz vb.
+  category: text("category").notNull(),
+  // Teknoloji: standart | efb | agm | start-stop | jel
+  technology: text("technology").notNull().default("standart"),
+  amper: integer("amper").notNull(), // Ah
+  volt: integer("volt").notNull().default(12),
+  // Marş gücü (CCA) - opsiyonel
+  cca: integer("cca"),
+  price: numeric("price", { precision: 10, scale: 2 }),
+  stock: boolean("stock").notNull().default(true),
+  productCode: text("product_code"),
+  image: text("image"), // ana görsel
+  images: text("images").array(), // ek galeri görselleri (panel/backend doldurur)
+  shortDesc: text("short_desc"),
+  description: text("description"),
+  featured: boolean("featured").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});

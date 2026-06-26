@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  /* Scroll-in animasyonu — yalnızca JS aktifse (html.reveal-ready) ve
+     kullanıcı hareketi kısıtlamadıysa uygulanır. Aksi halde içerik normal görünür. */
+  @media (prefers-reduced-motion: no-preference) {
+    html.reveal-ready main section {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+    html.reveal-ready main section.is-visible {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  body {
+    @apply bg-brand-light text-brand-dark antialiased;
+  }
+  h1, h2, h3 {
+    @apply font-bold tracking-tight;
+  }
+}
+
+@layer utilities {
+  @keyframes floaty {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+  .animate-floaty {
+    animation: floaty 5s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-floaty { animation: none; }
+  }
+}
+
+@layer components {
+  .container-x {
+    @apply mx-auto w-full max-w-6xl px-4;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 font-semibold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0;
+  }
+  .btn-gold {
+    @apply bg-brand-gold text-brand-dark hover:bg-brand-amber hover:shadow-lg hover:shadow-brand-gold/30;
+  }
+  .btn-dark {
+    @apply bg-brand-dark text-white hover:bg-brand-navy hover:shadow-lg;
+  }
+  .btn-outline {
+    @apply border-2 border-brand-dark text-brand-dark hover:bg-brand-dark hover:text-white hover:shadow-md;
+  }
+  .chip {
+    @apply inline-flex items-center rounded-full bg-brand-navy/10 px-3 py-1 text-sm font-medium text-brand-navy;
+  }
+  /* Bilgi/makale içeriği için tipografi */
+  .article {
+    @apply max-w-3xl leading-relaxed text-brand-navy/80;
+  }
+  .article h2 {
+    @apply mb-3 mt-8 text-2xl font-bold text-brand-dark;
+  }
+  .article h3 {
+    @apply mb-2 mt-6 text-lg font-bold text-brand-dark;
+  }
+  .article p {
+    @apply mb-4;
+  }
+  .article ul {
+    @apply mb-4 ml-5 list-disc space-y-1.5;
+  }
+  .article ol {
+    @apply mb-4 ml-5 list-decimal space-y-1.5;
+  }
+  .article a {
+    @apply font-semibold text-brand-gold hover:underline;
+  }
+  .article strong {
+    @apply font-semibold text-brand-dark;
+  }
+
+  /* Panel zengin metin editörü içeriği */
+  .rte-content {
+    @apply min-h-[180px] text-sm text-slate-800 outline-none;
+  }
+  .rte-content h2 {
+    @apply mb-1.5 mt-3 text-lg font-bold text-slate-900;
+  }
+  .rte-content h3 {
+    @apply mb-1 mt-2 font-bold text-slate-900;
+  }
+  .rte-content p {
+    @apply mb-2;
+  }
+  .rte-content ul {
+    @apply mb-2 ml-5 list-disc;
+  }
+  .rte-content ol {
+    @apply mb-2 ml-5 list-decimal;
+  }
+  .rte-content a {
+    @apply text-amber-600 underline;
+  }
+  .rte-content:empty::before {
+    content: attr(data-placeholder);
+    @apply text-slate-400;
+  }
+}

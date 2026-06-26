@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 250" width="280" height="250" role="img" aria-label="AKÜPORT araç aküsü">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#33415c"/>
+      <stop offset="0.5" stop-color="#1b263b"/>
+      <stop offset="1" stop-color="#0a1320"/>
+    </linearGradient>
+    <linearGradient id="lid" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#41506e"/>
+      <stop offset="1" stop-color="#26334d"/>
+    </linearGradient>
+    <linearGradient id="label" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd266"/>
+      <stop offset="0.5" stop-color="#f5a623"/>
+      <stop offset="1" stop-color="#d8861a"/>
+    </linearGradient>
+    <radialGradient id="posT" cx="0.4" cy="0.35" r="0.8">
+      <stop offset="0" stop-color="#ff6b6b"/>
+      <stop offset="1" stop-color="#9b1c1c"/>
+    </radialGradient>
+    <radialGradient id="negT" cx="0.4" cy="0.35" r="0.8">
+      <stop offset="0" stop-color="#7c8aa3"/>
+      <stop offset="1" stop-color="#2b3850"/>
+    </radialGradient>
+    <radialGradient id="ground" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#000000" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- zemin gölgesi -->
+  <ellipse cx="140" cy="225" rx="100" ry="18" fill="url(#ground)"/>
+
+  <!-- gövde -->
+  <rect x="44" y="66" width="192" height="142" rx="14" fill="url(#body)" stroke="#f5a623" stroke-width="3"/>
+  <!-- sağ kenar 3B gölgesi -->
+  <path d="M214 70 h8 a10 10 0 0 1 10 10 v124 a10 10 0 0 1 -10 10 h-8 z" fill="#000000" opacity="0.18"/>
+  <!-- üst kapak -->
+  <rect x="44" y="66" width="192" height="34" rx="14" fill="url(#lid)"/>
+  <rect x="44" y="90" width="192" height="10" fill="#1b263b" opacity="0.5"/>
+  <!-- üst parlama -->
+  <rect x="54" y="72" width="120" height="6" rx="3" fill="#ffffff" opacity="0.10"/>
+
+  <!-- kutup başları -->
+  <ellipse cx="84" cy="60" rx="20" ry="9" fill="#11203a"/>
+  <circle cx="84" cy="58" r="16" fill="url(#posT)"/>
+  <circle cx="84" cy="58" r="7" fill="#5e0f0f"/>
+  <text x="84" y="42" font-family="Arial" font-size="20" font-weight="bold" fill="#f5a623" text-anchor="middle">+</text>
+  <ellipse cx="196" cy="60" rx="20" ry="9" fill="#11203a"/>
+  <circle cx="196" cy="58" r="16" fill="url(#negT)"/>
+  <circle cx="196" cy="58" r="7" fill="#1a2438"/>
+  <text x="196" y="42" font-family="Arial" font-size="22" font-weight="bold" fill="#cbd5e1" text-anchor="middle">−</text>
+
+  <!-- etiket -->
+  <rect x="62" y="118" width="156" height="44" rx="8" fill="url(#label)"/>
+  <text x="140" y="148" font-family="Arial, sans-serif" font-size="24" font-weight="800" fill="#0d1b2a" text-anchor="middle">AKÜPORT</text>
+
+  <!-- şimşek + alt yazı -->
+  <path d="M140 168 l-17 28 h13 l-5 20 20-30 h-13 z" fill="#f5a623"/>
+  <text x="140" y="200" font-family="Arial" font-size="12" fill="#aab6c8" text-anchor="middle">12V • Yerinde Montaj</text>
+</svg>
