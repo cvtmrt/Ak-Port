@@ -3,7 +3,7 @@ DELETE FROM reviews WHERE source = 'google';
 INSERT INTO settings (key, value, updated_at)
 VALUES (
   'reviewsSummary',
-  '{"average":5,"count":139,"source":"google"}'::jsonb,
+  '{"average":5,"count":155,"source":"google"}'::jsonb,
   now()
 )
 ON CONFLICT (key) DO UPDATE SET

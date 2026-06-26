@@ -73,7 +73,7 @@ async function run() {
     );
   `;
 
-  console.log("Mock Google yorumları temizleniyor...");
+  console.log("Google kaynaklı eski/mock yorumlar temizleniyor...");
   await sql`DELETE FROM reviews WHERE source = 'google'`;
   for (const r of reviews) {
     await sql`

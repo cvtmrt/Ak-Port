@@ -25,8 +25,7 @@ export const posts = pgTable("posts", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Yorumlar tablosu — alan adları Google Places review verisiyle uyumlu,
-// böylece backend ister panelden ister Places API'den kolayca doldurur.
+// Yorumlar tablosu — panelde yönetilen ve sitede gösterilen onaylı yorumlar.
 export const reviews = pgTable("reviews", {
   id: serial("id").primaryKey(),
   author: text("author").notNull(), // Google: author_name

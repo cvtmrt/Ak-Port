@@ -81,7 +81,7 @@ export function Pages() {
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm">
           <div className="font-semibold text-slate-700">Yorumlar</div>
-          <p className="mt-1 text-slate-500">Yorumlar Google'dan otomatik çekilir, düzenlenmez.</p>
+          <p className="mt-1 text-slate-500">Yorum kartları <strong>Yorumlar</strong> bölümünden yönetilir.</p>
         </div>
       </div>
     </div>

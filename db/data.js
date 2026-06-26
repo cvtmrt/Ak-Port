@@ -119,13 +119,13 @@ export async function getDistrict(slug) {
   return (await getDistricts()).find((d) => d.slug === slug) || null;
 }
 
-// Onaylı yorumlar. DB varsa oradan, yoksa örnek veriden.
+// Onaylı yorumlar. DB varsa oradan, yoksa seed verisinden.
 export async function getReviews() {
   if (!hasDb) return seedReviews;
   try {
     return await db.select().from(reviewsTable).where(eq(reviewsTable.approved, true));
   } catch (err) {
-    console.error("[db] Yorumlar okunamadı, örnek veriye düşülüyor:", err.message);
+    console.error("[db] Yorumlar okunamadı, seed verisine düşülüyor:", err.message);
     return seedReviews;
   }
 }

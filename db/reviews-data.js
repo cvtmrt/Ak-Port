@@ -1,9 +1,9 @@
-// Google API kullanılmadan erişilebilen gerçek işletme özeti.
-// Tekil Google yorum metinleri API'siz güvenilir biçimde indirilemediği için
-// mock kart basmıyoruz; panelden manuel eklenen gerçek yorumlar sitede görünür.
+// Google Maps public payload'ından API key olmadan erişilebilen işletme özeti.
+// Tekil Google yorum metinleri public/signed-out isteklerde dönmediği için
+// sahte kart basmıyoruz; panelden eklenen gerçek yorumlar sitede görünür.
 export const reviewsSummary = {
   average: 5,
-  count: 139,
+  count: 155,
   source: "google",
 };
 
