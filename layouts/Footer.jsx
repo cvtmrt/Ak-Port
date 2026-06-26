@@ -13,8 +13,8 @@ const cats = [
 
 export function Footer() {
   const { site: currentSite, brands: currentBrands, districts: currentDistricts } = usePublicConfig();
-  const footerBrands = currentBrands?.length ? currentBrands.map((b) => b.name) : brandNames;
-  const footerDistricts = currentDistricts?.length ? currentDistricts : districts;
+  const footerBrands = Array.isArray(currentBrands) ? currentBrands.map((b) => b.name) : brandNames;
+  const footerDistricts = Array.isArray(currentDistricts) ? currentDistricts : districts;
   return (
     <footer className="mt-16 bg-brand-dark text-white/80">
       <div className="container-x grid gap-8 py-12 sm:grid-cols-2 lg:grid-cols-4">

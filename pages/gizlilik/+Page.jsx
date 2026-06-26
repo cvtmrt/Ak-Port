@@ -1,7 +1,8 @@
-import { site } from "../../lib/site.js";
+import { useData } from "vike-react/useData";
 import { Breadcrumbs } from "../../components/blocks.jsx";
 
 export default function Page() {
+  const { site } = useData();
   return (
     <>
       <Breadcrumbs items={[{ name: "Anasayfa", url: "/" }, { name: "Gizlilik & KVKK", url: "/gizlilik" }]} />

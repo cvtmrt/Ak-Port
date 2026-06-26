@@ -4,48 +4,13 @@ import fs from "fs";
 import path from "path";
 import multer from "multer";
 import { hasDb, sql } from "../db/index.js";
-import {
-  products as seedProducts,
-  categories as seedCategories,
-} from "../db/seed-data.js";
-import { posts as seedPosts } from "../db/posts-data.js";
-import { reviews as seedReviews } from "../db/reviews-data.js";
-import { site, brandNames, districts as seedDistricts } from "../lib/site.js";
-import { homeDefaults, designDefaults, pages as pageDefaults } from "../lib/panel-schema.js";
+import { defaultAdminData, defaultBrands, ensureCollectionSeeded, ensureSettingSeeded } from "../db/bootstrap.js";
+import { site } from "../lib/site.js";
+import { homeDefaults, designDefaults } from "../lib/panel-schema.js";
 
 const isProduction = process.env.NODE_ENV === "production";
 const uploadDir = process.env.UPLOAD_DIR || (isProduction ? "/data/uploads" : path.join(process.cwd(), "public/uploads"));
 const publicUploadBase = process.env.UPLOAD_PUBLIC_PATH || "/uploads";
-
-const defaultBrands = brandNames.map((name, index) => ({
-  name,
-  logo: `/images/brands/${slugifyAscii(name)}.svg`,
-  sortOrder: index,
-  active: true,
-}));
-
-const defaults = {
-  products: seedProducts,
-  posts: seedPosts,
-  reviews: seedReviews,
-  brands: defaultBrands,
-  categories: seedCategories.map((item, index) => ({ ...item, sortOrder: index, active: true })),
-  districts: seedDistricts.map((item, index) => ({ ...item, sortOrder: index, active: true })),
-  pages: pageDefaults.map((p) => ({ id: p.id, label: p.label, path: p.path, ...p.defaults, published: true })),
-};
-
-function slugifyAscii(value) {
-  return String(value || "")
-    .toLocaleLowerCase("tr-TR")
-    .replaceAll("ı", "i")
-    .replaceAll("ğ", "g")
-    .replaceAll("ü", "u")
-    .replaceAll("ş", "s")
-    .replaceAll("ö", "o")
-    .replaceAll("ç", "c")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 function sessionValue() {
   const secret = process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_PASSWORD || "dev-admin-session";
@@ -271,8 +236,7 @@ const writers = {
 
 async function readSetting(key, fallback) {
   if (!hasDb) return fallback;
-  const rows = await sql`SELECT value FROM settings WHERE key = ${key}`;
-  return rows[0]?.value ?? fallback;
+  return ensureSettingSeeded(key, fallback);
 }
 
 async function writeSetting(key, value) {
@@ -307,12 +271,18 @@ export function mountAdminApi(app) {
 
   app.get("/api/public/config", async (req, res) => {
     try {
+      if (hasDb) {
+        await Promise.all([
+          ensureCollectionSeeded("brands"),
+          ensureCollectionSeeded("districts"),
+        ]);
+      }
       const [siteSettings, design, home, brands, districts] = await Promise.all([
         readSetting("site", site),
         readSetting("design", designDefaults),
         readSetting("home", homeDefaults),
         hasDb ? readers.brands().then((rows) => rows.filter((b) => b.active)).catch(() => defaultBrands) : defaultBrands,
-        hasDb ? readers.districts().then((rows) => rows.filter((d) => d.active)).catch(() => defaults.districts) : defaults.districts,
+        hasDb ? readers.districts().then((rows) => rows.filter((d) => d.active)).catch(() => defaultAdminData.districts) : defaultAdminData.districts,
       ]);
       res.json({ site: siteSettings, design, home, brands, districts });
     } catch (err) {
@@ -368,9 +338,10 @@ export function mountAdminApi(app) {
       return;
     }
     if (!hasDb) {
-      res.json({ items: defaults[collection] || [] });
+      res.json({ items: defaultAdminData[collection] || [] });
       return;
     }
+    await ensureCollectionSeeded(collection);
     res.json({ items: await readers[collection]() });
   });
 

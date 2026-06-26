@@ -1,11 +1,12 @@
-import { site } from "../../lib/site.js";
+import { useData } from "vike-react/useData";
 import { CallButton, WhatsappButton } from "../../components/Cta.jsx";
 import { PhoneIcon, MailIcon, PinIcon, ClockIcon, InstagramIcon } from "../../components/icons.jsx";
 import { Breadcrumbs, SectionTitle } from "../../components/blocks.jsx";
 
-const mapEmbed = `https://maps.google.com/maps?q=${site.address.lat},${site.address.lng}&z=15&output=embed`;
-
 export default function Page() {
+  const { site } = useData();
+  const mapEmbed = `https://maps.google.com/maps?q=${site.address.lat},${site.address.lng}&z=15&output=embed`;
+
   return (
     <>
       <Breadcrumbs items={[{ name: "Anasayfa", url: "/" }, { name: "İletişim", url: "/iletisim" }]} />

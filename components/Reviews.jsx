@@ -1,4 +1,4 @@
-import { site } from "../lib/site.js";
+import { usePublicConfig } from "../lib/public-config-client.js";
 
 function Star({ filled }) {
   return (
@@ -51,6 +51,7 @@ function ReviewCard({ review }) {
 }
 
 export function ReviewsSection({ reviews = [], summary, limit }) {
+  const { site } = usePublicConfig();
   const list = limit ? reviews.slice(0, limit) : reviews;
   if (!list.length && (!summary || summary.count <= 0)) return null;
   return (

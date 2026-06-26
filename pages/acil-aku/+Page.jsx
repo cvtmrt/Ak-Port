@@ -1,4 +1,4 @@
-import { site } from "../../lib/site.js";
+import { useData } from "vike-react/useData";
 import { CallButton, WhatsappButton } from "../../components/Cta.jsx";
 import { PhoneIcon, BoltIcon } from "../../components/icons.jsx";
 import { Breadcrumbs, SectionTitle, Faq, CtaBand } from "../../components/blocks.jsx";
@@ -17,6 +17,7 @@ const faq = [
 ];
 
 export default function Page() {
+  const { site } = useData();
   return (
     <>
       <Breadcrumbs items={[{ name: "Anasayfa", url: "/" }, { name: "Acil Akü", url: "/acil-aku" }]} />

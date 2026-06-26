@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { vehicleBrands, modelsOf, recommend } from "../lib/vehicles.js";
-import { site } from "../lib/site.js";
+import { usePublicConfig } from "../lib/public-config-client.js";
 import { BoltIcon, CheckIcon, WhatsappIcon, PhoneIcon } from "./icons.jsx";
 
 const techLabel = { standart: "Standart", efb: "EFB", agm: "AGM" };
 const techCat = { standart: "otomobil", efb: "efb", agm: "agm" };
 
 export function AkuBulucu() {
+  const { site } = usePublicConfig();
   const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
   const models = brand ? modelsOf(brand) : [];

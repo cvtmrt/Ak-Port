@@ -1,5 +1,4 @@
 import { useData } from "vike-react/useData";
-import { site } from "../../../lib/site.js";
 import { CallButton, WhatsappButton } from "../../../components/Cta.jsx";
 import { BoltIcon, CheckIcon } from "../../../components/icons.jsx";
 import { Breadcrumbs, SectionTitle, ProductGrid, CtaBand } from "../../../components/blocks.jsx";

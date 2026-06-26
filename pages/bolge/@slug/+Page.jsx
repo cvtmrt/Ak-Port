@@ -1,11 +1,10 @@
 import { useData } from "vike-react/useData";
-import { site } from "../../../lib/site.js";
 import { CallButton, WhatsappButton } from "../../../components/Cta.jsx";
 import { CheckIcon } from "../../../components/icons.jsx";
 import { Breadcrumbs, SectionTitle, CategoryGrid, ProductGrid, CtaBand } from "../../../components/blocks.jsx";
 
 export default function Page() {
-  const { district: d, featured, categories } = useData();
+  const { district: d, featured, categories, site } = useData();
   return (
     <>
       <Breadcrumbs items={[{ name: "Anasayfa", url: "/" }, { name: `${d.name} Akü`, url: `/bolge/${d.slug}` }]} />

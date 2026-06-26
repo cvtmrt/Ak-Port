@@ -1,4 +1,4 @@
-import { site } from "../lib/site.js";
+import { usePublicConfig } from "../lib/public-config-client.js";
 import { CategoryIcon, CheckIcon, BoltIcon, PinIcon, ClockIcon, ShieldIcon } from "./icons.jsx";
 import { ProductCard } from "./ProductCard.jsx";
 
@@ -72,6 +72,7 @@ export function CategoryGrid({ categories }) {
 }
 
 export function ProductGrid({ products }) {
+  const { site } = usePublicConfig();
   if (!products?.length) {
     return <p className="rounded-lg bg-white p-6 text-center text-brand-navy/70">Bu kategoride henüz ürün eklenmedi. Stok için <a className="font-semibold text-brand-gold" href={`tel:${site.phoneIntl}`}>arayın</a>.</p>;
   }
@@ -180,6 +181,7 @@ export function PostCard({ post }) {
 }
 
 export function CtaBand({ title, text }) {
+  const { site } = usePublicConfig();
   return (
     <section className="bg-brand-dark">
       <div className="container-x flex flex-col items-center gap-4 py-10 text-center text-white sm:flex-row sm:justify-between sm:text-left">

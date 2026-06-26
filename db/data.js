@@ -17,19 +17,15 @@ import {
 } from "./seed-data.js";
 import { reviews as seedReviews, reviewsSummary as seedReviewsSummary } from "./reviews-data.js";
 import { posts as seedPosts } from "./posts-data.js";
-import { site, brandNames, districts as seedDistricts } from "../lib/site.js";
+import { site } from "../lib/site.js";
 import { homeDefaults, designDefaults, pages as pageDefaults } from "../lib/panel-schema.js";
+import { defaultAdminData, defaultBrands, ensureCollectionSeeded, ensureSettingSeeded } from "./bootstrap.js";
 import { eq, desc, asc } from "drizzle-orm";
-
-const seedBrands = brandNames.map((name) => ({
-  name,
-  logo: `/images/brands/${name.toLocaleLowerCase("tr-TR").replace("ı", "i").replace("İ", "i")}.svg`,
-  active: true,
-}));
 
 async function loadProducts() {
   if (!hasDb) return seedProducts;
   try {
+    await ensureCollectionSeeded("products");
     return await db.select().from(productsTable);
   } catch (err) {
     console.error("[db] Ürünler okunamadı, seed verisine düşülüyor:", err.message);
@@ -64,12 +60,13 @@ export async function getByAmper(amper) {
 export async function getCategories() {
   if (!hasDb) return seedCategories;
   try {
+    await ensureCollectionSeeded("categories");
     const rows = await db
       .select()
       .from(categoriesTable)
       .where(eq(categoriesTable.active, true))
       .orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
-    return rows.length ? rows : seedCategories;
+    return rows;
   } catch (err) {
     console.error("[db] Kategoriler okunamadı, seed verisine düşülüyor:", err.message);
     return seedCategories;
@@ -86,32 +83,34 @@ export async function getAmperValues() {
 }
 
 export async function getBrands() {
-  if (!hasDb) return seedBrands;
+  if (!hasDb) return defaultBrands;
   try {
+    await ensureCollectionSeeded("brands");
     const rows = await db
       .select()
       .from(brandsTable)
       .where(eq(brandsTable.active, true))
       .orderBy(asc(brandsTable.sortOrder), asc(brandsTable.name));
-    return rows.length ? rows : seedBrands;
+    return rows;
   } catch (err) {
     console.error("[db] Markalar okunamadı, seed verisine düşülüyor:", err.message);
-    return seedBrands;
+    return defaultBrands;
   }
 }
 
 export async function getDistricts() {
-  if (!hasDb) return seedDistricts;
+  if (!hasDb) return defaultAdminData.districts;
   try {
+    await ensureCollectionSeeded("districts");
     const rows = await db
       .select()
       .from(districtsTable)
       .where(eq(districtsTable.active, true))
       .orderBy(asc(districtsTable.sortOrder), asc(districtsTable.name));
-    return rows.length ? rows : seedDistricts;
+    return rows;
   } catch (err) {
     console.error("[db] Bölgeler okunamadı, seed verisine düşülüyor:", err.message);
-    return seedDistricts;
+    return defaultAdminData.districts;
   }
 }
 
@@ -123,6 +122,7 @@ export async function getDistrict(slug) {
 export async function getReviews() {
   if (!hasDb) return seedReviews;
   try {
+    await ensureCollectionSeeded("reviews");
     return await db.select().from(reviewsTable).where(eq(reviewsTable.approved, true));
   } catch (err) {
     console.error("[db] Yorumlar okunamadı, seed verisine düşülüyor:", err.message);
@@ -155,6 +155,7 @@ export async function getPosts() {
     return [...seedPosts].sort((a, b) => (b.publishedAt || "").localeCompare(a.publishedAt || ""));
   }
   try {
+    await ensureCollectionSeeded("posts");
     return await db
       .select()
       .from(postsTable)
@@ -177,8 +178,7 @@ export async function getRecentPosts(limit = 3, excludeSlug) {
 async function getSetting(key, fallback) {
   if (!hasDb) return fallback;
   try {
-    const rows = await db.select().from(settingsTable).where(eq(settingsTable.key, key)).limit(1);
-    return rows[0]?.value ?? fallback;
+    return await ensureSettingSeeded(key, fallback);
   } catch (err) {
     console.error(`[db] ${key} ayarı okunamadı, varsayılana düşülüyor:`, err.message);
     return fallback;
@@ -201,14 +201,13 @@ export async function getContentPages() {
   const defaults = pageDefaults.map((p) => ({ id: p.id, label: p.label, path: p.path, ...p.defaults }));
   if (!hasDb) return defaults;
   try {
+    await ensureCollectionSeeded("pages");
     const rows = await db
       .select()
       .from(contentPagesTable)
       .where(eq(contentPagesTable.published, true))
       .orderBy(asc(contentPagesTable.label));
-    return rows.length
-      ? rows.map((p) => ({ id: p.id, label: p.label, path: p.path, title: p.title, subtitle: p.subtitle, content: p.content, ...(p.data || {}) }))
-      : defaults;
+    return rows.map((p) => ({ id: p.id, label: p.label, path: p.path, title: p.title, subtitle: p.subtitle, content: p.content, ...(p.data || {}) }));
   } catch (err) {
     console.error("[db] Sayfalar okunamadı, varsayılana düşülüyor:", err.message);
     return defaults;

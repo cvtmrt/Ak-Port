@@ -1,0 +1,251 @@
+import { hasDb, sql } from "./index.js";
+import { products as seedProducts, categories as seedCategories } from "./seed-data.js";
+import { posts as seedPosts } from "./posts-data.js";
+import { reviews as seedReviews, reviewsSummary as seedReviewsSummary } from "./reviews-data.js";
+import { site, brandNames, districts as seedDistricts } from "../lib/site.js";
+import { homeDefaults, designDefaults, pages as pageDefaults } from "../lib/panel-schema.js";
+
+function jsonb(value) {
+  return JSON.stringify(value ?? {});
+}
+
+function slugifyAscii(value) {
+  return String(value || "")
+    .toLocaleLowerCase("tr-TR")
+    .replaceAll("ı", "i")
+    .replaceAll("ğ", "g")
+    .replaceAll("ü", "u")
+    .replaceAll("ş", "s")
+    .replaceAll("ö", "o")
+    .replaceAll("ç", "c")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export const defaultBrands = brandNames.map((name, index) => ({
+  name,
+  logo: `/images/brands/${slugifyAscii(name)}.svg`,
+  sortOrder: index,
+  active: true,
+}));
+
+export const defaultAdminData = {
+  products: seedProducts,
+  posts: seedPosts,
+  reviews: seedReviews,
+  brands: defaultBrands,
+  categories: seedCategories.map((item, index) => ({ ...item, sortOrder: index, active: true })),
+  districts: seedDistricts.map((item, index) => ({ ...item, sortOrder: index, active: true })),
+  pages: pageDefaults.map((p) => ({ id: p.id, label: p.label, path: p.path, ...p.defaults, published: true })),
+};
+
+const seededCollections = new Set();
+const seededSettings = new Set();
+const seedingCollections = new Map();
+
+async function markerExists(key) {
+  const rows = await sql`SELECT key FROM settings WHERE key = ${key} LIMIT 1`;
+  return Boolean(rows[0]);
+}
+
+async function writeMarker(key) {
+  await sql`
+    INSERT INTO settings (key, value, updated_at)
+    VALUES (${key}, ${jsonb({ seededAt: new Date().toISOString() })}::jsonb, now())
+    ON CONFLICT (key) DO NOTHING
+  `;
+}
+
+async function countCollection(collection) {
+  switch (collection) {
+    case "products": {
+      const rows = await sql`SELECT count(*)::int AS count FROM products`;
+      return rows[0]?.count ?? 0;
+    }
+    case "posts": {
+      const rows = await sql`SELECT count(*)::int AS count FROM posts`;
+      return rows[0]?.count ?? 0;
+    }
+    case "reviews": {
+      const rows = await sql`SELECT count(*)::int AS count FROM reviews`;
+      return rows[0]?.count ?? 0;
+    }
+    case "brands": {
+      const rows = await sql`SELECT count(*)::int AS count FROM brands`;
+      return rows[0]?.count ?? 0;
+    }
+    case "categories": {
+      const rows = await sql`SELECT count(*)::int AS count FROM categories`;
+      return rows[0]?.count ?? 0;
+    }
+    case "districts": {
+      const rows = await sql`SELECT count(*)::int AS count FROM districts`;
+      return rows[0]?.count ?? 0;
+    }
+    case "pages": {
+      const rows = await sql`SELECT count(*)::int AS count FROM content_pages`;
+      return rows[0]?.count ?? 0;
+    }
+    default:
+      return 0;
+  }
+}
+
+async function insertDefaultProducts() {
+  for (const p of defaultAdminData.products) {
+    await sql`
+      INSERT INTO products (slug, name, brand, category, technology, amper, volt, cca, price, stock, product_code, image, images, short_desc, description, featured)
+      VALUES (${p.slug}, ${p.name}, ${p.brand}, ${p.category}, ${p.technology}, ${p.amper}, ${p.volt}, ${p.cca ?? null}, ${p.price ?? null}, ${p.stock ?? true}, ${p.productCode ?? null}, ${p.image ?? null}, ${Array.isArray(p.images) ? p.images : []}, ${p.shortDesc ?? null}, ${p.description ?? null}, ${p.featured ?? false})
+      ON CONFLICT (slug) DO NOTHING
+    `;
+  }
+}
+
+async function insertDefaultPosts() {
+  for (const p of defaultAdminData.posts) {
+    await sql`
+      INSERT INTO posts (slug, title, excerpt, content, cover, author, tags, published, published_at)
+      VALUES (${p.slug}, ${p.title}, ${p.excerpt ?? null}, ${p.content ?? null}, ${p.cover ?? null}, ${p.author ?? "AKÜPORT"}, ${Array.isArray(p.tags) ? p.tags : []}, ${p.published ?? true}, ${p.publishedAt ?? null})
+      ON CONFLICT (slug) DO NOTHING
+    `;
+  }
+}
+
+async function insertDefaultReviews() {
+  for (const r of defaultAdminData.reviews) {
+    await sql`
+      INSERT INTO reviews (author, rating, text, time, avatar, source, approved)
+      VALUES (${r.author}, ${r.rating ?? 5}, ${r.text ?? null}, ${r.time ?? null}, ${r.avatar ?? null}, ${r.source ?? "google"}, ${r.approved ?? true})
+    `;
+  }
+  await ensureSettingSeeded("reviewsSummary", seedReviewsSummary);
+}
+
+async function insertDefaultBrands() {
+  for (const brand of defaultAdminData.brands) {
+    await sql`
+      INSERT INTO brands (name, logo, sort_order, active)
+      VALUES (${brand.name}, ${brand.logo}, ${brand.sortOrder}, ${brand.active})
+      ON CONFLICT (name) DO NOTHING
+    `;
+  }
+}
+
+async function insertDefaultCategories() {
+  for (const category of defaultAdminData.categories) {
+    await sql`
+      INSERT INTO categories (slug, name, kind, icon, intro, sort_order, active)
+      VALUES (${category.slug}, ${category.name}, ${category.kind}, ${category.icon}, ${category.intro ?? null}, ${category.sortOrder}, ${category.active})
+      ON CONFLICT (slug) DO NOTHING
+    `;
+  }
+}
+
+async function insertDefaultDistricts() {
+  for (const district of defaultAdminData.districts) {
+    await sql`
+      INSERT INTO districts (slug, name, title, intro, sort_order, active)
+      VALUES (${district.slug}, ${district.name}, ${district.title}, ${district.intro ?? null}, ${district.sortOrder}, ${district.active})
+      ON CONFLICT (slug) DO NOTHING
+    `;
+  }
+}
+
+async function insertDefaultPages() {
+  for (const page of pageDefaults) {
+    await sql`
+      INSERT INTO content_pages (id, label, path, title, subtitle, content, data, published, updated_at)
+      VALUES (${page.id}, ${page.label}, ${page.path}, ${page.defaults.title ?? null}, ${page.defaults.subtitle ?? null}, ${page.defaults.content ?? null}, ${jsonb(page.defaults)}::jsonb, true, now())
+      ON CONFLICT (id) DO NOTHING
+    `;
+  }
+}
+
+async function seedCollection(collection) {
+  switch (collection) {
+    case "products":
+      await insertDefaultProducts();
+      break;
+    case "posts":
+      await insertDefaultPosts();
+      break;
+    case "reviews":
+      await insertDefaultReviews();
+      break;
+    case "brands":
+      await insertDefaultBrands();
+      break;
+    case "categories":
+      await insertDefaultCategories();
+      break;
+    case "districts":
+      await insertDefaultDistricts();
+      break;
+    case "pages":
+      await insertDefaultPages();
+      break;
+  }
+}
+
+export async function ensureCollectionSeeded(collection) {
+  if (!hasDb || !defaultAdminData[collection] || seededCollections.has(collection)) return;
+  if (seedingCollections.has(collection)) return seedingCollections.get(collection);
+
+  const promise = (async () => {
+    const marker = `seeded:${collection}`;
+    if (await markerExists(marker)) {
+      seededCollections.add(collection);
+      return;
+    }
+
+    const count = await countCollection(collection);
+    if (count === 0) await seedCollection(collection);
+    await writeMarker(marker);
+    seededCollections.add(collection);
+  })();
+
+  seedingCollections.set(collection, promise);
+  try {
+    await promise;
+  } finally {
+    seedingCollections.delete(collection);
+  }
+}
+
+export async function ensureSettingSeeded(key, fallback) {
+  if (!hasDb) return fallback;
+  if (seededSettings.has(key)) {
+    const rows = await sql`SELECT value FROM settings WHERE key = ${key} LIMIT 1`;
+    return rows[0]?.value ?? fallback;
+  }
+
+  const rows = await sql`SELECT value FROM settings WHERE key = ${key} LIMIT 1`;
+  if (rows[0]) {
+    seededSettings.add(key);
+    return rows[0].value;
+  }
+
+  await sql`
+    INSERT INTO settings (key, value, updated_at)
+    VALUES (${key}, ${jsonb(fallback)}::jsonb, now())
+    ON CONFLICT (key) DO NOTHING
+  `;
+  seededSettings.add(key);
+  return fallback;
+}
+
+export async function ensureBaseSeeded() {
+  if (!hasDb) return;
+  await Promise.all([
+    ensureSettingSeeded("site", site),
+    ensureSettingSeeded("home", homeDefaults),
+    ensureSettingSeeded("design", designDefaults),
+    ensureCollectionSeeded("brands"),
+    ensureCollectionSeeded("categories"),
+    ensureCollectionSeeded("districts"),
+    ensureCollectionSeeded("products"),
+    ensureCollectionSeeded("posts"),
+    ensureCollectionSeeded("reviews"),
+    ensureCollectionSeeded("pages"),
+  ]);
+}

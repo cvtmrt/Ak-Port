@@ -1,5 +1,10 @@
-import { getContentPage } from "../../db/data.js";
+import { getBrands, getContentPage, getSiteSettings } from "../../db/data.js";
 
 export async function data() {
-  return { page: await getContentPage("hakkimizda") };
+  const [page, site, brands] = await Promise.all([
+    getContentPage("hakkimizda"),
+    getSiteSettings(),
+    getBrands(),
+  ]);
+  return { page, site, brands };
 }

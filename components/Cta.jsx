@@ -1,9 +1,5 @@
-import { site } from "../lib/site.js";
 import { usePublicConfig } from "../lib/public-config-client.js";
 import { PhoneIcon, WhatsappIcon } from "./icons.jsx";
-
-const waLink = (text) =>
-  `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(text || "Merhaba, akü hakkında bilgi almak istiyorum.")}`;
 
 export function CallButton({ className = "", label = "Hemen Ara" }) {
   const { site: currentSite } = usePublicConfig();

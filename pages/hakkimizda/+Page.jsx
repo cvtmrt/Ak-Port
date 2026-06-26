@@ -1,5 +1,4 @@
 import { useData } from "vike-react/useData";
-import { site, brandNames } from "../../lib/site.js";
 import { CheckIcon } from "../../components/icons.jsx";
 import { Breadcrumbs, SectionTitle, CtaBand } from "../../components/blocks.jsx";
 
@@ -13,7 +12,7 @@ const values = [
 ];
 
 export default function Page() {
-  const { page } = useData();
+  const { page, site, brands } = useData();
   return (
     <>
       <Breadcrumbs items={[{ name: "Anasayfa", url: "/" }, { name: "Hakkımızda", url: "/hakkimizda" }]} />
@@ -33,8 +32,8 @@ export default function Page() {
         <div className="mt-8">
           <h2 className="mb-3 text-lg font-bold text-brand-dark">Çalıştığımız Markalar</h2>
           <div className="flex flex-wrap gap-2">
-            {brandNames.map((b) => (
-              <span key={b} className="chip">{b}</span>
+            {(brands || []).map((b) => (
+              <span key={b.name} className="chip">{b.name}</span>
             ))}
           </div>
         </div>
