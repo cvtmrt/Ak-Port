@@ -28,6 +28,10 @@ function Login({ onLogin }) {
 
   async function submit(e) {
     e.preventDefault();
+    if (!pw.trim()) {
+      setError("Panel şifresini girin.");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
@@ -64,7 +68,7 @@ function Login({ onLogin }) {
         </button>
         {error && <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
         <p className="mt-4 text-center text-xs text-slate-400">
-          Şifre production ortamında ADMIN_PASSWORD değişkeninden gelir.
+          Railway'deki ADMIN_PASSWORD ile giriş yapın.
         </p>
       </form>
     </div>
