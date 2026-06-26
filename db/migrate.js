@@ -4,6 +4,10 @@ import path from "path";
 import { hasDb, sql } from "./index.js";
 import { reviews, reviewsSummary } from "./reviews-data.js";
 
+function jsonb(value) {
+  return JSON.stringify(value ?? {});
+}
+
 if (!hasDb) {
   console.error("HATA: DATABASE_URL tanımlı değil.");
   process.exit(1);
@@ -26,7 +30,7 @@ async function run() {
   }
   await sql`
     INSERT INTO settings (key, value, updated_at)
-    VALUES ('reviewsSummary', ${sql.json(reviewsSummary)}, now())
+    VALUES ('reviewsSummary', ${jsonb(reviewsSummary)}::jsonb, now())
     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now();
   `;
   console.log("Migration tamamlandı.");

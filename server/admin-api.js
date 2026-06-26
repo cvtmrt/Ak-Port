@@ -85,6 +85,10 @@ function toBool(value, fallback = false) {
   return Boolean(value);
 }
 
+function jsonb(value) {
+  return JSON.stringify(value ?? {});
+}
+
 function normalizeProduct(p) {
   return {
     slug: p.slug,
@@ -259,7 +263,7 @@ const writers = {
     for (const item of items.map(normalizePage)) {
       await sql`
         INSERT INTO content_pages (id, label, path, title, subtitle, content, data, published, updated_at)
-        VALUES (${item.id}, ${item.label}, ${item.path}, ${item.title}, ${item.subtitle}, ${item.content}, ${sql.json(item.data)}, ${item.published}, now())
+        VALUES (${item.id}, ${item.label}, ${item.path}, ${item.title}, ${item.subtitle}, ${item.content}, ${jsonb(item.data)}::jsonb, ${item.published}, now())
       `;
     }
   },
@@ -274,7 +278,7 @@ async function readSetting(key, fallback) {
 async function writeSetting(key, value) {
   await sql`
     INSERT INTO settings (key, value, updated_at)
-    VALUES (${key}, ${sql.json(value)}, now())
+    VALUES (${key}, ${jsonb(value)}::jsonb, now())
     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
   `;
 }

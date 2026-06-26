@@ -10,6 +10,10 @@ import { posts } from "./posts-data.js";
 import { site, brandNames, districts } from "../lib/site.js";
 import { homeDefaults, designDefaults, pages } from "../lib/panel-schema.js";
 
+function jsonb(value) {
+  return JSON.stringify(value ?? {});
+}
+
 if (!hasDb) {
   console.error("HATA: DATABASE_URL tanımlı değil. .env dosyasına Railway bağlantı adresini ekleyin.");
   process.exit(1);
@@ -146,7 +150,7 @@ async function run() {
   for (const p of pages) {
     await sql`
       INSERT INTO content_pages (id, label, path, title, subtitle, content, data, published, updated_at)
-      VALUES (${p.id}, ${p.label}, ${p.path}, ${p.defaults.title ?? null}, ${p.defaults.subtitle ?? null}, ${p.defaults.content ?? null}, ${sql.json(p.defaults)}, true, now())
+      VALUES (${p.id}, ${p.label}, ${p.path}, ${p.defaults.title ?? null}, ${p.defaults.subtitle ?? null}, ${p.defaults.content ?? null}, ${jsonb(p.defaults)}::jsonb, true, now())
       ON CONFLICT (id) DO NOTHING;
     `;
   }
@@ -154,22 +158,22 @@ async function run() {
   console.log("Genel ayarlar hazırlanıyor...");
   await sql`
     INSERT INTO settings (key, value, updated_at)
-    VALUES ('site', ${sql.json(site)}, now())
+    VALUES ('site', ${jsonb(site)}::jsonb, now())
     ON CONFLICT (key) DO NOTHING;
   `;
   await sql`
     INSERT INTO settings (key, value, updated_at)
-    VALUES ('home', ${sql.json(homeDefaults)}, now())
+    VALUES ('home', ${jsonb(homeDefaults)}::jsonb, now())
     ON CONFLICT (key) DO NOTHING;
   `;
   await sql`
     INSERT INTO settings (key, value, updated_at)
-    VALUES ('design', ${sql.json(designDefaults)}, now())
+    VALUES ('design', ${jsonb(designDefaults)}::jsonb, now())
     ON CONFLICT (key) DO NOTHING;
   `;
   await sql`
     INSERT INTO settings (key, value, updated_at)
-    VALUES ('reviewsSummary', ${sql.json(reviewsSummary)}, now())
+    VALUES ('reviewsSummary', ${jsonb(reviewsSummary)}::jsonb, now())
     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now();
   `;
 
