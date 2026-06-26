@@ -16,6 +16,7 @@ import { homeDefaults, designDefaults, pages as pageDefaults } from "../lib/pane
 const isProduction = process.env.NODE_ENV === "production";
 const uploadDir = process.env.UPLOAD_DIR || (isProduction ? "/data/uploads" : path.join(process.cwd(), "public/uploads"));
 const publicUploadBase = process.env.UPLOAD_PUBLIC_PATH || "/uploads";
+const defaultGooglePlaceQuery = "Akü Port İncek Akü Market Beytepe Gölbaşı Ankara";
 
 const defaultBrands = brandNames.map((name, index) => ({
   name,
@@ -130,6 +131,24 @@ function normalizeReview(r) {
     avatar: r.avatar || null,
     source: r.source || "manuel",
     approved: toBool(r.approved, true),
+  };
+}
+
+function reviewText(review) {
+  if (!review?.text) return null;
+  if (typeof review.text === "string") return review.text;
+  return review.text.text || null;
+}
+
+function normalizeGoogleReview(review) {
+  return {
+    author: review.authorAttribution?.displayName || "Google kullanıcısı",
+    rating: toInt(review.rating, 5),
+    text: reviewText(review),
+    time: review.relativePublishTimeDescription || (review.publishTime ? new Date(review.publishTime).toLocaleDateString("tr-TR") : null),
+    avatar: review.authorAttribution?.photoUri || null,
+    source: "google",
+    approved: true,
   };
 }
 
@@ -279,6 +298,84 @@ async function writeSetting(key, value) {
   `;
 }
 
+async function resolveGooglePlaceId(apiKey) {
+  if (process.env.GOOGLE_PLACE_ID) return process.env.GOOGLE_PLACE_ID;
+
+  const query = process.env.GOOGLE_PLACE_QUERY || defaultGooglePlaceQuery;
+  const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Goog-Api-Key": apiKey,
+      "X-Goog-FieldMask": "places.id,places.displayName,places.rating,places.userRatingCount",
+    },
+    body: JSON.stringify({
+      textQuery: query,
+      languageCode: "tr",
+      regionCode: "TR",
+    }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error?.message || `Google place araması başarısız: ${res.status}`);
+  const place = data.places?.[0];
+  if (!place?.id) throw new Error("Google işletme kaydı bulunamadı. GOOGLE_PLACE_ID veya GOOGLE_PLACE_QUERY ekleyin.");
+  return place.id;
+}
+
+async function fetchGoogleReviews() {
+  const apiKey = process.env.GOOGLE_PLACES_API_KEY || process.env.GOOGLE_MAPS_API_KEY;
+  if (!apiKey) throw new Error("GOOGLE_PLACES_API_KEY env değişkeni eksik.");
+
+  const placeId = await resolveGooglePlaceId(apiKey);
+  const url = new URL(`https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`);
+  url.searchParams.set("languageCode", "tr");
+  const res = await fetch(url, {
+    headers: {
+      "X-Goog-Api-Key": apiKey,
+      "X-Goog-FieldMask": "id,displayName,rating,userRatingCount,reviews,googleMapsUri",
+    },
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error?.message || `Google yorumları alınamadı: ${res.status}`);
+
+  const reviews = Array.isArray(data.reviews) ? data.reviews.map(normalizeGoogleReview).filter((r) => r.author && r.rating) : [];
+  return {
+    placeId: data.id || placeId,
+    placeName: data.displayName?.text || "Akü Port",
+    googleMapsUri: data.googleMapsUri,
+    rating: Number(data.rating || 0),
+    userRatingCount: Number(data.userRatingCount || reviews.length),
+    reviews,
+  };
+}
+
+async function saveGoogleReviewsToDb(payload) {
+  await sql`DELETE FROM reviews WHERE source = 'google'`;
+  for (const item of payload.reviews) {
+    await sql`
+      INSERT INTO reviews (author, rating, text, time, avatar, source, approved)
+      VALUES (${item.author}, ${item.rating}, ${item.text}, ${item.time}, ${item.avatar}, 'google', true)
+    `;
+  }
+
+  await writeSetting("reviewsSummary", {
+    average: payload.rating,
+    count: payload.userRatingCount,
+    googleMapsUri: payload.googleMapsUri,
+    placeId: payload.placeId,
+    placeName: payload.placeName,
+    syncedAt: new Date().toISOString(),
+  });
+
+  const siteSettings = await readSetting("site", site);
+  if (payload.googleMapsUri) {
+    await writeSetting("site", {
+      ...siteSettings,
+      social: { ...(siteSettings.social || {}), googleMaps: payload.googleMapsUri },
+    });
+  }
+}
+
 function uploadMiddleware() {
   fs.mkdirSync(uploadDir, { recursive: true });
   const storage = multer.diskStorage({
@@ -380,6 +477,22 @@ export function mountAdminApi(app) {
     const items = Array.isArray(req.body?.items) ? req.body.items : [];
     await writers[collection](items);
     res.json({ ok: true, count: items.length });
+  });
+
+  app.post("/api/admin/reviews/sync-google", requireAdmin, async (req, res) => {
+    if (!requireDb(res)) return;
+    try {
+      const payload = await fetchGoogleReviews();
+      await saveGoogleReviewsToDb(payload);
+      res.json({
+        ok: true,
+        count: payload.reviews.length,
+        summary: { average: payload.rating, count: payload.userRatingCount },
+        items: await readers.reviews(),
+      });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: err.message });
+    }
   });
 
   app.post("/api/admin/upload", requireAdmin, uploadMiddleware().single("file"), async (req, res) => {

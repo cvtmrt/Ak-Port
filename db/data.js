@@ -132,6 +132,17 @@ export async function getReviews() {
 
 // Ortalama puan + adet (AggregateRating ve başlık için).
 export async function getRatingSummary() {
+  if (hasDb) {
+    try {
+      const rows = await db.select().from(settingsTable).where(eq(settingsTable.key, "reviewsSummary")).limit(1);
+      const summary = rows[0]?.value;
+      if (summary?.average && summary?.count) {
+        return { average: Number(summary.average), count: Number(summary.count) };
+      }
+    } catch (err) {
+      console.error("[db] Yorum özeti okunamadı, yorumlardan hesaplanıyor:", err.message);
+    }
+  }
   const list = await getReviews();
   if (!list.length) return { average: 0, count: 0 };
   const sum = list.reduce((a, r) => a + Number(r.rating || 0), 0);

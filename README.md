@@ -35,6 +35,8 @@ npm run db:seed      # tabloyu oluşturur + db/seed-data.js ürünlerini aktarı
 - Production'da `ADMIN_PASSWORD` zorunludur.
 - Panel şu alanları PostgreSQL'e kaydeder: ürünler, kategoriler, markalar, blog yazıları, yorumlar, hizmet bölgeleri, içerik sayfaları, anasayfa metinleri, site ayarları ve tasarım ayarları.
 - Görsel yüklemeleri `UPLOAD_DIR` klasörüne yazılır ve `UPLOAD_PUBLIC_PATH` üzerinden servis edilir.
+- Yorumlar ekranındaki **Google'dan Çek** butonu, `GOOGLE_PLACES_API_KEY` ile Google Places API'den gerçek işletme yorumlarını ve toplam puanı PostgreSQL'e senkronize eder.
+  Google Places API review alanı Google tarafında ücretli Places API alanıdır ve API'nin döndürdüğü yorum sayısı Google tarafından sınırlanabilir.
 
 ## Railway volume / upload ayarı
 Railway'de volume mount path'i olarak `/data` kullanın ve ortam değişkenlerini şöyle ayarlayın:
@@ -47,7 +49,7 @@ UPLOAD_MAX_BYTES=5242880
 ## Üretim (Railway deploy)
 - Build: `npm run build`
 - Start: `npm start`   (Railway `PORT`'u otomatik verir)
-- Ortam değişkenleri: `DATABASE_URL`, `NODE_ENV=production`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`, `UPLOAD_DIR=/data/uploads`
+- Ortam değişkenleri: `DATABASE_URL`, `NODE_ENV=production`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`, `UPLOAD_DIR=/data/uploads`, `GOOGLE_PLACES_API_KEY`
 
 ## Ürün ekleme / düzenleme
 Tek kaynak: [`db/seed-data.js`](db/seed-data.js). Ürünleri buradan düzenleyip
