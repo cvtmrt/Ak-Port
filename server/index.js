@@ -4,6 +4,7 @@ import http from "http";
 import compression from "compression";
 import { renderPage } from "vike/server";
 import { buildSitemap, buildRobots } from "../lib/sitemap.js";
+import { getAnalyticsConfig } from "../lib/analytics.js";
 import { mountAdminApi } from "./admin-api.js";
 import "dotenv/config";
 
@@ -55,6 +56,7 @@ async function startServer() {
     const pageContextInit = {
       urlOriginal: req.originalUrl,
       headersOriginal: req.headers,
+      analytics: getAnalyticsConfig(),
     };
     const pageContext = await renderPage(pageContextInit);
     const { httpResponse } = pageContext;

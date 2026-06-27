@@ -9,6 +9,8 @@ export default function Head() {
   const isPanel = path.startsWith("/panel");
   const canonical = abs(path === "/" ? "" : path);
   const ogImage = abs("/images/og-default.png");
+  const analytics = pageContext?.analytics || {};
+  const { gaId, adsId } = analytics;
 
   // Yönetim paneli arama motorlarına kapalı.
   if (isPanel) {
@@ -46,6 +48,23 @@ export default function Head() {
       {/* İkonlar */}
       <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
       <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+      {/* Google Analytics 4 + Google Ads (yalnızca ID tanımlıysa basılır) */}
+      {(gaId || adsId) && (
+        <script
+          async
+          src={`https://www.googletagmanager.com/gtag/js?id=${gaId || adsId}`}
+        />
+      )}
+      {(gaId || adsId) && (
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());${
+              gaId ? `gtag('config','${gaId}');` : ""
+            }${adsId ? `gtag('config','${adsId}');` : ""}`,
+          }}
+        />
+      )}
     </>
   );
 }

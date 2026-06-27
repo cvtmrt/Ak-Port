@@ -4,6 +4,7 @@ import { Header } from "./Header.jsx";
 import { Footer } from "./Footer.jsx";
 import { FloatingActions } from "../components/Cta.jsx";
 import { RevealManager } from "../components/Reveal.jsx";
+import { Analytics } from "../components/Analytics.jsx";
 
 export default function Layout({ children }) {
   const { urlPathname } = usePageContext();
@@ -20,6 +21,7 @@ export default function Layout({ children }) {
       <Footer />
       <FloatingActions />
       <RevealManager />
+      <Analytics />
     </div>
   );
 }

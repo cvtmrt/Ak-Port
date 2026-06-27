@@ -10,5 +10,7 @@ export default {
   description:
     "İncek, Gölbaşı ve Ankara'da akü satışı, yerinde montaj ve 7/24 acil akü hizmeti. Mutlu, Varta, Bosch, İnci aküleri. Hemen arayın: 0544 479 29 59.",
   lang: "tr",
+  // Sunucudan istemciye taşınacak ek pageContext değerleri (analytics ID'leri).
+  passToClient: ["analytics"],
   extends: vikeReact,
 };
