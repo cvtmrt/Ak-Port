@@ -1,7 +1,24 @@
+import { usePageContext } from "vike-react/usePageContext";
 import { JsonLd } from "../../../components/JsonLd.jsx";
-import { localBusinessJsonLd } from "../../../lib/seo.js";
+import { localBusinessJsonLd, faqJsonLd, breadcrumbJsonLd } from "../../../lib/seo.js";
 
-// Bölge sayfalarında da LocalBusiness verisi (yerel arama sinyali).
+// Bölge sayfalarında LocalBusiness + Breadcrumb + (varsa) FAQ yapısal verisi.
 export function Head() {
-  return <JsonLd data={localBusinessJsonLd()} />;
+  const { data } = usePageContext();
+  const d = data?.district;
+  const faq = data?.content?.faq;
+  return (
+    <>
+      <JsonLd data={localBusinessJsonLd()} />
+      {d && (
+        <JsonLd
+          data={breadcrumbJsonLd([
+            { name: "Anasayfa", url: "/" },
+            { name: `${d.name} Akü`, url: `/bolge/${d.slug}` },
+          ])}
+        />
+      )}
+      {faq?.length > 0 && <JsonLd data={faqJsonLd(faq)} />}
+    </>
+  );
 }

@@ -1,10 +1,11 @@
 import { useData } from "vike-react/useData";
 import { CallButton, WhatsappButton } from "../../../components/Cta.jsx";
-import { CheckIcon } from "../../../components/icons.jsx";
-import { Breadcrumbs, SectionTitle, CategoryGrid, ProductGrid, CtaBand } from "../../../components/blocks.jsx";
+import { CheckIcon, PinIcon } from "../../../components/icons.jsx";
+import { MapEmbed } from "../../../components/MapEmbed.jsx";
+import { Breadcrumbs, SectionTitle, CategoryGrid, ProductGrid, CtaBand, Faq, DistrictLinks } from "../../../components/blocks.jsx";
 
 export default function Page() {
-  const { district: d, featured, categories, site } = useData();
+  const { district: d, featured, categories, site, content, otherDistricts } = useData();
   return (
     <>
       <Breadcrumbs items={[{ name: "Anasayfa", url: "/" }, { name: `${d.name} Akü`, url: `/bolge/${d.slug}` }]} />
@@ -25,17 +26,77 @@ export default function Page() {
         </div>
       </section>
 
+      {/* Zengin, bölgeye özgü içerik (SEO metni) */}
       <section className="container-x py-10">
-        <SectionTitle title={`${d.name}'da Hangi Aküleri Buluruz?`} desc="Otomobil, ticari araç, kamyon ve motosiklet aküsünde tüm marka ve amperler." />
-        <CategoryGrid categories={categories} />
+        <div className="grid gap-8 lg:grid-cols-3">
+          <div className="space-y-8 lg:col-span-2">
+            {content.sections.map((s) => (
+              <article key={s.h2}>
+                <h2 className="text-2xl font-extrabold text-brand-dark">{s.h2}</h2>
+                <p className="mt-3 leading-relaxed text-brand-navy/80">{s.body}</p>
+              </article>
+            ))}
+
+            {content.neighborhoods?.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-extrabold text-brand-dark">{d.name}'da Hizmet Verdiğimiz Bölgeler</h2>
+                <p className="mt-3 text-brand-navy/80">
+                  {d.name} ve çevresindeki şu bölge ve mahallelere yerinde akü değişimi için geliyoruz:
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {content.neighborhoods.map((n) => (
+                    <span key={n} className="chip inline-flex items-center gap-1.5">
+                      <PinIcon width={14} height={14} className="text-brand-gold" /> {n}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Sağ sütun: hızlı iletişim + konum */}
+          <aside className="space-y-6">
+            <div className="rounded-2xl border border-brand-dark/10 bg-white p-6">
+              <h2 className="text-lg font-bold text-brand-dark">{d.name}'da aküm bitti, hemen lazım</h2>
+              <p className="mt-2 text-sm text-brand-navy/70">
+                Bulunduğunuz yere gelip doğru aküyü takıyoruz. Hemen arayın veya WhatsApp'tan yazın.
+              </p>
+              <div className="mt-4 flex flex-col gap-3">
+                <CallButton className="w-full justify-center" />
+                <WhatsappButton className="w-full justify-center" text={`Merhaba, ${d.name} bölgesindeyim, akü için yardım istiyorum.`} />
+              </div>
+            </div>
+            <MapEmbed
+              lat={site.address?.lat}
+              lng={site.address?.lng}
+              query={`${site.address?.street}, ${site.address?.district}`}
+              title={`${site.name} konum`}
+            />
+          </aside>
+        </div>
       </section>
 
       <section className="bg-white py-10">
         <div className="container-x">
-          <SectionTitle kicker="Popüler" title={`${d.name} İçin Önerilen Aküler`} />
-          <ProductGrid products={featured} />
+          <SectionTitle title={`${d.name}'da Hangi Aküleri Buluruz?`} desc="Otomobil, ticari araç, kamyon ve motosiklet aküsünde tüm marka ve amperler." />
+          <CategoryGrid categories={categories} />
         </div>
       </section>
+
+      <section className="container-x py-10">
+        <SectionTitle kicker="Popüler" title={`${d.name} İçin Önerilen Aküler`} />
+        <ProductGrid products={featured} />
+      </section>
+
+      {/* Bölgeye özel SSS (FAQ JSON-LD +Head.jsx içinde) */}
+      {content.faq?.length > 0 && (
+        <section className="bg-white py-10">
+          <div className="container-x">
+            <SectionTitle kicker="Sık Sorulanlar" title={`${d.name} Akü Hakkında Sık Sorulan Sorular`} />
+            <Faq items={content.faq} />
+          </div>
+        </section>
+      )}
 
       <section className="container-x py-10">
         <div className="rounded-2xl border border-brand-dark/10 bg-white p-6">
@@ -50,6 +111,16 @@ export default function Page() {
           </div>
         </div>
       </section>
+
+      {/* Diğer bölgeler (iç linkleme) */}
+      {otherDistricts?.length > 0 && (
+        <section className="bg-white py-10">
+          <div className="container-x">
+            <SectionTitle title="Diğer Bölgelerde de Hizmetinizdeyiz" desc="Aşağıdaki bölgelere de yerinde akü değişimi ve acil akü hizmeti veriyoruz." />
+            <DistrictLinks districts={otherDistricts} />
+          </div>
+        </section>
+      )}
 
       <CtaBand title={`${d.name}'da aküm bitti!`} text="Hemen arayın, en kısa sürede yanınızdayız." />
     </>
