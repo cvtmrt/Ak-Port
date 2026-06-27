@@ -145,6 +145,9 @@ export function BrandStrip({ brands = brandLogos }) {
           src={l.src}
           alt={`${l.name} akü`}
           loading="lazy"
+          decoding="async"
+          width="96"
+          height="32"
           className="h-7 w-auto opacity-70 grayscale transition duration-300 hover:opacity-100 hover:grayscale-0 sm:h-8"
         />
       ))}
@@ -168,7 +171,7 @@ export function PostCard({ post }) {
       className="group flex flex-col overflow-hidden rounded-xl border border-brand-dark/10 bg-white transition-all duration-200 hover:-translate-y-1 hover:shadow-xl"
     >
       <div className="aspect-[16/9] overflow-hidden bg-brand-light">
-        <img src={post.cover || "/images/blog/bakim.svg"} alt={post.title} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+        <img src={post.cover || "/images/blog/bakim.svg"} alt={post.title} loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
       </div>
       <div className="flex flex-1 flex-col gap-2 p-5">
         {post.publishedAt && <span className="text-xs font-medium text-brand-navy/50">{formatDate(post.publishedAt)}</span>}

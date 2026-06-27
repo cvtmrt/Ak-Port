@@ -51,6 +51,9 @@ export default function Head() {
 
       {/* Google Analytics 4 + Google Ads (yalnızca ID tanımlıysa basılır) */}
       {(gaId || adsId) && (
+        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
+      )}
+      {(gaId || adsId) && (
         <script
           async
           src={`https://www.googletagmanager.com/gtag/js?id=${gaId || adsId}`}

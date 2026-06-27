@@ -44,6 +44,10 @@ export default function Page() {
             <img
               src="/images/aku-hero.svg"
               alt="AKÜPORT araç aküsü"
+              width="280"
+              height="250"
+              fetchpriority="high"
+              decoding="async"
               className="relative w-64 animate-floaty drop-shadow-2xl sm:w-80"
             />
           </div>

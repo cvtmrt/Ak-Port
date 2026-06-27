@@ -21,7 +21,7 @@ export function ProductCard({ product: p }) {
       className="group flex flex-col overflow-hidden rounded-xl border border-brand-dark/10 bg-white transition-all duration-200 hover:-translate-y-1 hover:border-brand-gold/40 hover:shadow-xl"
     >
       <div className="flex items-center justify-center bg-brand-light p-4">
-        <img src={productImage(p)} alt={`${p.name} - ${p.amper} amper akü`} loading="lazy" className="h-32 w-auto object-contain transition-transform group-hover:scale-105" />
+        <img src={productImage(p)} alt={`${p.name} - ${p.amper} amper akü`} loading="lazy" decoding="async" width="240" height="200" className="h-32 w-auto object-contain transition-transform group-hover:scale-105" />
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
         <div className="flex items-center gap-2">
