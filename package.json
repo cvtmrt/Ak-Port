@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "description": "AKÜPORT - Ankara İncek/Gölbaşı akü satış ve yerinde montaj sitesi",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "node ./server/index.js",
     "build": "vite build",
