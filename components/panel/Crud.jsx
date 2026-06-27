@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import { Field } from "./Field.jsx";
 import { apiGetCollection, apiSaveCollection } from "../../lib/admin-api.js";
 
-// Salt frontend CRUD ekranı. Veriler bellek içinde (oturum boyunca) tutulur;
-// kalıcı kayıt backend'e bağlanınca yapılır. Değişiklikler sayfa yenilenince sıfırlanır.
 function emptyItem(fields) {
   const o = {};
   for (const f of fields) {
@@ -50,12 +48,23 @@ export function Crud({ schema }) {
   function startEdit(item, index) {
     setEditing({ item: { ...item }, index });
   }
-  function remove(index) {
+  async function remove(index) {
     if (!confirm("Bu kaydı silmek istediğinize emin misiniz?")) return;
-    setItems(items.filter((_, i) => i !== index));
+    const nextItems = items.filter((_, i) => i !== index);
+    setSaving(true);
+    setStatus("");
+    try {
+      await apiSaveCollection(schema.key, nextItems);
+      setItems(nextItems);
+      setStatus("Silindi.");
+    } catch (err) {
+      setStatus(`Silinemedi: ${err.message}`);
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function save() {
+  async function save() {
     const it = { ...editing.item };
     for (const f of schema.fields) {
       if (f.required && !String(it[f.key] ?? "").trim()) {
@@ -66,16 +75,16 @@ export function Crud({ schema }) {
     if (schema.idField === "id" && !it.id) {
       it.id = (items.reduce((m, x) => Math.max(m, Number(x.id) || 0), 0) || 0) + 1;
     }
-    setItems(editing.index === null ? [...items, it] : items.map((x, i) => (i === editing.index ? it : x)));
-    setEditing(null);
-  }
-
-  async function saveAll() {
+    const nextItems = editing.index === null
+      ? [...items, it]
+      : items.map((x, i) => (i === editing.index ? it : x));
     setSaving(true);
     setStatus("");
     try {
-      await apiSaveCollection(schema.key, items);
-      setStatus("Sunucuya kaydedildi.");
+      await apiSaveCollection(schema.key, nextItems);
+      setItems(nextItems);
+      setEditing(null);
+      setStatus("Kaydedildi.");
     } catch (err) {
       setStatus(`Kaydedilemedi: ${err.message}`);
     } finally {
@@ -104,9 +113,12 @@ export function Crud({ schema }) {
           ))}
         </div>
         <div className="mt-4 flex gap-3">
-          <button onClick={save} className="rounded-lg bg-amber-500 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-amber-400">Kaydet</button>
-          <button onClick={() => setEditing(null)} className="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100">İptal</button>
+          <button onClick={save} disabled={saving} className="rounded-lg bg-amber-500 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-amber-400 disabled:opacity-60">
+            {saving ? "Kaydediliyor..." : "Kaydet"}
+          </button>
+          <button onClick={() => setEditing(null)} disabled={saving} className="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-60">İptal</button>
         </div>
+        {status && <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">{status}</p>}
       </div>
     );
   }
@@ -115,12 +127,7 @@ export function Crud({ schema }) {
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-bold text-slate-800">{schema.label} <span className="text-slate-400">({items.length})</span></h2>
-        <div className="flex gap-2">
-          <button onClick={saveAll} disabled={saving} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-60">
-            {saving ? "Kaydediliyor..." : "Sunucuya Kaydet"}
-          </button>
-          <button onClick={startNew} className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-400">+ Yeni {schema.singular}</button>
-        </div>
+        <button onClick={startNew} disabled={saving} className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-400 disabled:opacity-60">+ Yeni {schema.singular}</button>
       </div>
       {status && <p className="mb-3 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">{status}</p>}
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
@@ -138,8 +145,8 @@ export function Crud({ schema }) {
                   <td key={c.key} className="max-w-[220px] truncate px-4 py-2.5 text-slate-700">{String(item[c.key] ?? "")}</td>
                 ))}
                 <td className="whitespace-nowrap px-4 py-2.5 text-right">
-                  <button onClick={() => startEdit(item, i)} className="mr-3 font-medium text-amber-600 hover:underline">Düzenle</button>
-                  <button onClick={() => remove(i)} className="font-medium text-red-500 hover:underline">Sil</button>
+                  <button onClick={() => startEdit(item, i)} disabled={saving} className="mr-3 font-medium text-amber-600 hover:underline disabled:opacity-60">Düzenle</button>
+                  <button onClick={() => remove(i)} disabled={saving} className="font-medium text-red-500 hover:underline disabled:opacity-60">Sil</button>
                 </td>
               </tr>
             ))}
