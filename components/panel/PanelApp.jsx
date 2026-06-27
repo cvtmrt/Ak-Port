@@ -67,9 +67,6 @@ function Login({ onLogin }) {
           {loading ? "Giriş yapılıyor..." : "Giriş Yap"}
         </button>
         {error && <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
-        <p className="mt-4 text-center text-xs text-slate-400">
-          Railway'deki ADMIN_PASSWORD ile giriş yapın.
-        </p>
       </form>
     </div>
   );
