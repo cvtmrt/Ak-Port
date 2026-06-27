@@ -1,7 +1,8 @@
 import { useData } from "vike-react/useData";
 import { CallButton, WhatsappButton } from "../../components/Cta.jsx";
 import { PhoneIcon, BoltIcon } from "../../components/icons.jsx";
-import { Breadcrumbs, SectionTitle, Faq, CtaBand } from "../../components/blocks.jsx";
+import { MapEmbed } from "../../components/MapEmbed.jsx";
+import { Breadcrumbs, SectionTitle, Faq, CtaBand, TrustBadges } from "../../components/blocks.jsx";
 
 const steps = [
   { n: "1", t: "Arayın", d: "Konumunuzu ve aracınızın marka-modelini söyleyin." },
@@ -10,14 +11,8 @@ const steps = [
   { n: "4", t: "Eski akü takas", d: "Eski akünüzü alıp fiyattan düşüyoruz." },
 ];
 
-const faq = [
-  { q: "Ne kadar sürede gelirsiniz?", a: "İncek, Gölbaşı ve yakın bölgelerde en kısa sürede yanınızdayız. Yoğunluğa göre süreyi telefonda netleştiririz." },
-  { q: "Gece de hizmet var mı?", a: "Acil akü hattımız 7/24 açıktır. Mesai dışı acil durumlar için arayın." },
-  { q: "Kart ile ödeme olur mu?", a: "Evet, nakit ve kredi kartı ile ödeme alınır." },
-];
-
 export default function Page() {
-  const { site } = useData();
+  const { site, faq } = useData();
   return (
     <>
       <Breadcrumbs items={[{ name: "Anasayfa", url: "/" }, { name: "Acil Akü", url: "/acil-aku" }]} />
@@ -49,13 +44,26 @@ export default function Page() {
         </div>
       </section>
 
+      <section className="container-x py-10">
+        <SectionTitle kicker="Neden AKÜPORT?" title="Yolda Kalmadan, Güvenle" />
+        <TrustBadges />
+      </section>
+
       <section className="bg-white py-10">
-        <div className="container-x">
-          <SectionTitle kicker="Hizmet Kapsamı" title="Ankara'nın Her Yerine Geliyoruz" desc="İncek, Gölbaşı, Beytepe, Çayyolu ve Ümitköy başta olmak üzere Ankara'nın tüm ilçelerine yerinde akü hizmeti." />
-          <div className="flex flex-wrap gap-3">
-            <CallButton />
-            <WhatsappButton text="Acil! Konumum Ankara'da, yerinde akü değişimi lazım." />
+        <div className="container-x grid items-center gap-8 lg:grid-cols-2">
+          <div>
+            <SectionTitle kicker="Hizmet Kapsamı" title="Ankara'nın Her Yerine Geliyoruz" desc="İncek, Gölbaşı, Beytepe, Çayyolu ve Ümitköy başta olmak üzere Ankara'nın tüm ilçelerine yerinde akü hizmeti." />
+            <div className="flex flex-wrap gap-3">
+              <CallButton />
+              <WhatsappButton text="Acil! Konumum Ankara'da, yerinde akü değişimi lazım." />
+            </div>
           </div>
+          <MapEmbed
+            lat={site.address?.lat}
+            lng={site.address?.lng}
+            query={`${site.address?.street}, ${site.address?.district}`}
+            title={`${site.name} konum`}
+          />
         </div>
       </section>
 
