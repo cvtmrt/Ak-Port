@@ -27,10 +27,15 @@ const nav = [
 
 function Logo() {
   return (
-    <a href="/" className="flex items-center gap-1 text-2xl font-extrabold tracking-tight text-white">
-      AKÜ
-      <BoltIcon width={22} height={22} className="text-brand-gold" />
-      <span className="text-brand-gold">PORT</span>
+    <a href="/" className="flex flex-col leading-none text-white">
+      <span className="flex items-center gap-1 text-2xl font-extrabold tracking-tight">
+        AKÜ
+        <BoltIcon width={22} height={22} className="text-brand-gold" />
+        <span className="text-brand-gold">PORT</span>
+      </span>
+      <span className="mt-1 block w-full text-center text-[0.7rem] font-semibold uppercase tracking-[0.35em] text-white/60">
+        Akü Market
+      </span>
     </a>
   );
 }
