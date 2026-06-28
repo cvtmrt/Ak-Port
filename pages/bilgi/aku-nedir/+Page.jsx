@@ -39,7 +39,7 @@ export default function Page() {
           <p>Ortalama akü ömrü <strong>3-5 yıldır</strong>. Marşın yavaşlaması, far ışıklarının zayıflaması veya aracın sabahları zor çalışması akünün yorulduğunu gösterir. Bu belirtilerde akünüzü ücretsiz test edip durumunu söyleyebiliriz.</p>
 
           <h2>Doğru Aküyü Nasıl Seçerim?</h2>
-          <p>En kolayı: aracınızın marka ve modelini bize söyleyin, uygun amper ve teknolojiyi önerelim. Dilerseniz <a href="/aku-bulucu">Akü Bulucu</a> aracımızı kullanarak saniyeler içinde öneri alabilir, ardından <a href="/urunler">ürünlerimizi</a> inceleyebilirsiniz.</p>
+          <p>En kolayı: aracınızın marka ve modelini bize söyleyin, uygun amper ve teknolojiyi önerelim. Ardından <a href="/urunler">ürünlerimizi</a> inceleyebilirsiniz.</p>
         </article>
         )}
       </section>

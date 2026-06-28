@@ -64,7 +64,7 @@ export const posts = [
       <p>AGM (Absorbent Glass Mat), yüksek elektrik tüketimli ve donanımlı araçlar için en üst segment teknolojidir. Derin deşarja ve titreşime daha dayanıklıdır.</p>
       <h2>Hangisini Seçmeliyim?</h2>
       <p>Aracınız fabrikadan AGM ile çıkıyorsa AGM, EFB ile çıkıyorsa EFB (veya üstü olan AGM) kullanılmalıdır. Daha düşük teknolojiye geçmek performans ve ömür kaybına yol açar.</p>
-      <p>Emin değilseniz aracınızın marka-modelini söyleyin; <a href="/aku-bulucu">Akü Bulucu</a> ile doğru aküyü saniyeler içinde önerelim.</p>
+      <p>Emin değilseniz aracınızın marka-modelini söyleyin; doğru aküyü saniyeler içinde önerelim.</p>
     `,
   },
   {

@@ -5,7 +5,6 @@ import {
   SectionTitle, TrustBadges, CategoryGrid, ProductGrid,
   AmperLinks, Faq, CtaBand, BrandStrip,
 } from "../../components/blocks.jsx";
-import { AkuBulucu } from "../../components/AkuBulucu.jsx";
 import { ReviewsSection } from "../../components/Reviews.jsx";
 
 export default function Page() {
@@ -64,12 +63,6 @@ export default function Page() {
           {home.brandHeading}
         </p>
         <BrandStrip brands={brands} />
-      </section>
-
-      {/* AKÜ BULUCU */}
-      <section className="container-x pt-12">
-        <SectionTitle kicker={home.bulucuKicker} title={home.bulucuTitle} desc={home.bulucuDesc} />
-        <AkuBulucu />
       </section>
 
       {/* KATEGORİLER */}

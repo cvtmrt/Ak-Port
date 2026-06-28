@@ -3,7 +3,7 @@ export const faqItems = [
   { q: "Aküm bitti, bulunduğum yere gelir misiniz?", a: "Evet. Ankara'nın her yerine yerinde akü değişimi ve takviye hizmeti veriyoruz. İncek, Gölbaşı, Beytepe, Çayyolu ve Ümitköy başta olmak üzere konumunuza gelir, yeni aküyü takıp eski akünüzü alırız." },
   { q: "Akü değişimi ne kadar sürer?", a: "Yerinde akü değişimi genellikle 10-15 dakika sürer. Aracınızın yanına gelir, uygun aküyü takar ve çalıştığından emin olduktan sonra ayrılırız." },
   { q: "Eski akümü geri alıyor musunuz?", a: "Evet, eski akünüzü hurda olarak değerlendirip yeni akü fiyatından düşüyoruz. Bu hem cebinize hem çevreye iyi gelir." },
-  { q: "Hangi amper aküye ihtiyacım olduğunu nasıl anlarım?", a: "Aracınızın marka ve modelini söylemeniz yeterli; doğru amper ve teknolojiyi biz öneririz. Sitemizdeki Akü Bulucu aracını da kullanabilirsiniz." },
+  { q: "Hangi amper aküye ihtiyacım olduğunu nasıl anlarım?", a: "Aracınızın marka ve modelini söylemeniz yeterli; doğru amper ve teknolojiyi biz öneririz." },
   { q: "Start-stop aracıma normal akü takılır mı?", a: "Hayır. Start-stop sistemli araçlar EFB veya AGM akü gerektirir. Standart akü takılırsa ömrü kısa olur ve start-stop sistemi düzgün çalışmaz." },
   { q: "Akünün ömrü ne kadar, ne zaman değişmeli?", a: "Ortalama akü ömrü 3-5 yıldır. Marş yavaşladıysa, far ışıkları zayıfladıysa veya araç sabahları zor çalışıyorsa akünüzü ücretsiz test edip durumunu söyleyebiliriz." },
   { q: "AGM ile EFB akü arasındaki fark nedir?", a: "İkisi de start-stop araçlar içindir. EFB giriş seviyesi ve daha ekonomiktir; AGM ise daha yüksek elektrik tüketimli ve premium araçlar için daha dayanıklı, üst segment teknolojidir." },
