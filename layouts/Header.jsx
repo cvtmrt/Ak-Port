@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { usePublicConfig } from "../lib/public-config-client.js";
 import { PhoneIcon, ClockIcon, MenuIcon, BoltIcon } from "../components/icons.jsx";
 
@@ -36,6 +37,23 @@ function Logo() {
 
 export function Header() {
   const { site: currentSite } = usePublicConfig();
+  const mobileMenuRef = useRef(null);
+
+  // Mobil menü: dışarı tıklayınca veya Esc'e basınca kapansın.
+  useEffect(() => {
+    const el = mobileMenuRef.current;
+    if (!el) return;
+    const close = () => { el.open = false; };
+    const onClick = (e) => { if (el.open && !el.contains(e.target)) close(); };
+    const onKey = (e) => { if (e.key === "Escape") close(); };
+    document.addEventListener("click", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("click", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, []);
+
   return (
     <header className="sticky top-0 z-40 bg-brand-dark text-white shadow-md">
       {/* Üst bilgi şeridi */}
@@ -79,12 +97,15 @@ export function Header() {
           <PhoneIcon width={16} height={16} /> {currentSite.phone}
         </a>
 
-        {/* Mobil menü (JS gerektirmez) */}
-        <details className="relative lg:hidden">
+        {/* Mobil menü (dışarı tıkla/Esc ile kapanır, JS yoksa native çalışır) */}
+        <details ref={mobileMenuRef} className="relative lg:hidden">
           <summary className="flex cursor-pointer list-none items-center text-white">
             <MenuIcon />
           </summary>
-          <div className="absolute right-0 top-full mt-2 w-60 rounded-lg border border-white/10 bg-brand-navy p-2 shadow-xl">
+          <div
+            className="absolute right-0 top-full mt-2 w-60 rounded-lg border border-white/10 bg-brand-navy p-2 shadow-xl"
+            onClick={(e) => { if (e.target.closest("a") && mobileMenuRef.current) mobileMenuRef.current.open = false; }}
+          >
             {nav.map((n) =>
               n.children ? (
                 <div key={n.label} className="mt-1 border-t border-white/10 pt-1">

@@ -13,7 +13,7 @@ export function CallButton({ className = "", label = "Hemen Ara" }) {
 export function WhatsappButton({ className = "", text, label = "WhatsApp" }) {
   const { site: currentSite } = usePublicConfig();
   return (
-    <a href={`https://wa.me/${currentSite.whatsapp}?text=${encodeURIComponent(text || "Merhaba, akü hakkında bilgi almak istiyorum.")}`} target="_blank" rel="noopener noreferrer" className={`btn btn-dark ${className}`}>
+    <a href={`https://wa.me/${currentSite.whatsapp}?text=${encodeURIComponent(text || "Merhaba, akü hakkında bilgi almak istiyorum.")}`} target="_blank" rel="noopener noreferrer" className={`btn btn-whatsapp ${className}`}>
       <WhatsappIcon /> {label}
     </a>
   );

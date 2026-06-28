@@ -56,6 +56,9 @@
   .btn-outline {
     @apply border-2 border-brand-dark text-brand-dark hover:bg-brand-dark hover:text-white hover:shadow-md;
   }
+  .btn-whatsapp {
+    @apply bg-[#25D366] text-white hover:bg-[#1ebe5d] hover:shadow-lg hover:shadow-[#25D366]/30;
+  }
   .chip {
     @apply inline-flex items-center rounded-full bg-brand-navy/10 px-3 py-1 text-sm font-medium text-brand-navy;
   }

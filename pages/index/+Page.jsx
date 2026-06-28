@@ -42,13 +42,13 @@ export default function Page() {
             <div aria-hidden="true" className="pointer-events-none absolute h-72 w-72 rounded-full bg-brand-gold/25 blur-3xl sm:h-96 sm:w-96" />
             <div aria-hidden="true" className="pointer-events-none absolute h-48 w-48 rounded-full bg-brand-amber/20 blur-2xl" />
             <img
-              src="/images/aku-hero.svg"
+              src={home.heroImage || "/images/aku-hero.svg"}
               alt="AKÜPORT araç aküsü"
               width="280"
               height="250"
               fetchpriority="high"
               decoding="async"
-              className="relative w-64 animate-floaty drop-shadow-2xl sm:w-80"
+              className="relative w-full max-w-xs animate-floaty rounded-2xl drop-shadow-2xl sm:max-w-md"
             />
           </div>
         </div>
