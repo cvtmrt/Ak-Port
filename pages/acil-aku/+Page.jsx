@@ -18,15 +18,28 @@ export default function Page() {
       <Breadcrumbs items={[{ name: "Anasayfa", url: "/" }, { name: "Acil Akü", url: "/acil-aku" }]} />
 
       <section className="bg-brand-dark text-white">
-        <div className="container-x py-12">
-          <span className="inline-flex items-center gap-2 rounded-full bg-brand-gold/15 px-3 py-1 text-sm font-semibold text-brand-gold"><BoltIcon width={16} height={16} /> 7/24 Acil Akü Hattı</span>
-          <h1 className="mt-3 text-3xl font-extrabold sm:text-4xl">Aküm Bitti, Aracım Çalışmıyor!</h1>
-          <p className="mt-3 max-w-2xl text-lg text-white/80">
-            En yakın akücü olarak bulunduğunuz yere gelir, yerinde akü değişimi yaparız. Yolda kalmayın, hemen arayın.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <a href={`tel:${site.phoneIntl}`} className="btn btn-gold text-lg"><PhoneIcon /> {site.phone}</a>
-            <WhatsappButton text="Acil! Aküm bitti, yerinde akü değişimi lazım." />
+        <div className="container-x grid items-center gap-8 py-12 lg:grid-cols-2">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full bg-brand-gold/15 px-3 py-1 text-sm font-semibold text-brand-gold"><BoltIcon width={16} height={16} /> 7/24 Acil Akü Hattı</span>
+            <h1 className="mt-3 text-3xl font-extrabold sm:text-4xl">Aküm Bitti, Aracım Çalışmıyor!</h1>
+            <p className="mt-3 max-w-2xl text-lg text-white/80">
+              En yakın akücü olarak bulunduğunuz yere gelir, yerinde akü değişimi yaparız. Yolda kalmayın, hemen arayın.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <a href={`tel:${site.phoneIntl}`} className="btn btn-gold text-lg"><PhoneIcon /> {site.phone}</a>
+              <WhatsappButton text="Acil! Aküm bitti, yerinde akü değişimi lazım." />
+            </div>
+          </div>
+          <div className="flex justify-center lg:justify-end">
+            <img
+              src="/images/acil-aku-afis.jpeg"
+              alt="AKÜPORT yerinde akü değişimi - 7/24 mobil akü servisi"
+              width="1254"
+              height="1254"
+              fetchpriority="high"
+              decoding="async"
+              className="w-full max-w-md rounded-2xl shadow-2xl"
+            />
           </div>
         </div>
       </section>

@@ -8,7 +8,7 @@ export default function Head() {
   const path = pageContext?.urlPathname || "/";
   const isPanel = path.startsWith("/panel");
   const canonical = abs(path === "/" ? "" : path);
-  const ogImage = abs("/images/og-default.png");
+  const ogImage = abs("/images/acil-aku-afis.jpeg");
   const analytics = pageContext?.analytics || {};
   const { gaId, adsId } = analytics;
 
@@ -34,8 +34,8 @@ export default function Head() {
       <meta property="og:locale" content="tr_TR" />
       <meta property="og:url" content={canonical} />
       <meta property="og:image" content={ogImage} />
-      <meta property="og:image:width" content="1200" />
-      <meta property="og:image:height" content="630" />
+      <meta property="og:image:width" content="1254" />
+      <meta property="og:image:height" content="1254" />
 
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />
