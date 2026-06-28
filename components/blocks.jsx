@@ -194,7 +194,7 @@ export function CtaBand({ title, text }) {
         </div>
         <div className="flex shrink-0 gap-3">
           <a href={`tel:${site.phoneIntl}`} className="btn btn-gold">{site.phone}</a>
-          <a href={`https://wa.me/${site.whatsapp}`} target="_blank" rel="noopener noreferrer" className="btn border-2 border-white text-white hover:bg-white hover:text-brand-dark">WhatsApp</a>
+          <a href={`https://wa.me/${site.whatsapp}`} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">WhatsApp</a>
         </div>
       </div>
     </section>
