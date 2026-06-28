@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useData } from "vike-react/useData";
 import { CallButton, WhatsappButton } from "../../components/Cta.jsx";
 import { CheckIcon } from "../../components/icons.jsx";
@@ -6,26 +7,59 @@ import {
   AmperLinks, Faq, CtaBand, BrandStrip,
 } from "../../components/blocks.jsx";
 import { ReviewsSection } from "../../components/Reviews.jsx";
+import { HeroSlides } from "../../components/HeroSlides.jsx";
 
 export default function Page() {
   const { featured, categories, amper, reviews, ratingSummary, home, brands } = useData();
+  const heroSlides = home.heroSlides && home.heroSlides.length
+    ? home.heroSlides
+    : [{ badge: home.heroBadge, title1: home.heroTitle1, title2: home.heroTitle2, subtitle: home.heroSubtitle }];
+  const slideCount = heroSlides.length;
+  const [slide, setSlide] = useState(0);
+  const goSlide = (idx) => setSlide((idx + slideCount) % slideCount);
+  useEffect(() => {
+    if (slideCount <= 1) return;
+    const t = setInterval(() => setSlide((p) => (p + 1) % slideCount), 6000);
+    return () => clearInterval(t);
+  }, [slideCount]);
   return (
     <>
       {/* HERO */}
       <section className="relative overflow-hidden bg-brand-dark text-white">
         <div className="absolute inset-0 bg-gradient-to-br from-brand-dark via-brand-navy to-brand-darker" />
+        {home.heroBgImage && (
+          <>
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: `url(${home.heroBgImage})` }}
+            />
+            <div aria-hidden="true" className="absolute inset-0 bg-brand-dark/70" />
+          </>
+        )}
+        {slideCount > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={() => goSlide(slide - 1)}
+              aria-label="Önceki slayt"
+              className="absolute left-2 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-brand-dark/40 text-white/80 backdrop-blur transition hover:border-brand-gold hover:text-brand-gold sm:left-4"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+            </button>
+            <button
+              type="button"
+              onClick={() => goSlide(slide + 1)}
+              aria-label="Sonraki slayt"
+              className="absolute right-2 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-brand-dark/40 text-white/80 backdrop-blur transition hover:border-brand-gold hover:text-brand-gold sm:right-4"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+            </button>
+          </>
+        )}
         <div className="container-x relative grid gap-8 py-14 lg:grid-cols-2 lg:py-20">
           <div className="flex flex-col justify-center">
-            <span className="mb-3 inline-flex w-fit items-center gap-2 rounded-full bg-brand-gold/15 px-3 py-1 text-sm font-semibold text-brand-gold">
-              {home.heroBadge}
-            </span>
-            <h1 className="text-3xl font-extrabold leading-tight sm:text-4xl lg:text-5xl">
-              {home.heroTitle1}<br />
-              <span className="text-brand-gold">{home.heroTitle2}</span>
-            </h1>
-            <p className="mt-4 max-w-lg text-lg text-white/80">
-              {home.heroSubtitle}
-            </p>
+            <HeroSlides slides={heroSlides} index={slide} onSelect={goSlide} />
             <div className="mt-6 flex flex-wrap gap-3">
               <CallButton />
               <WhatsappButton text="Merhaba, akü değişimi için bilgi almak istiyorum." />

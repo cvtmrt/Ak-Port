@@ -59,7 +59,7 @@ export function HomeEditor() {
 
       <div className="grid gap-4 rounded-xl border border-slate-200 bg-white p-5 sm:grid-cols-2">
         {section.fields.map((f) => (
-          <div key={f.key} className={["textarea", "html", "faq", "cards"].includes(f.type) ? "sm:col-span-2" : ""}>
+          <div key={f.key} className={["textarea", "html", "faq", "cards", "slides"].includes(f.type) ? "sm:col-span-2" : ""}>
             <Field field={f} value={data[f.key]} onChange={(v) => set(f.key, v)} />
           </div>
         ))}

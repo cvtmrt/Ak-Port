@@ -125,6 +125,41 @@ export function Field({ field, value, onChange }) {
       );
       break;
     }
+    case "slides": {
+      const list = Array.isArray(value) ? value : [];
+      const upd = (i, key, v) => onChange(list.map((it, idx) => (idx === i ? { ...it, [key]: v } : it)));
+      const move = (i, dir) => {
+        const j = i + dir;
+        if (j < 0 || j >= list.length) return;
+        const next = [...list];
+        [next[i], next[j]] = [next[j], next[i]];
+        onChange(next);
+      };
+      input = (
+        <div className="space-y-3">
+          {list.map((it, i) => (
+            <div key={i} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-500">Slayt {i + 1}</span>
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={() => move(i, -1)} disabled={i === 0} className="text-xs font-medium text-slate-500 hover:text-slate-800 disabled:opacity-30">↑</button>
+                  <button type="button" onClick={() => move(i, 1)} disabled={i === list.length - 1} className="text-xs font-medium text-slate-500 hover:text-slate-800 disabled:opacity-30">↓</button>
+                  <button type="button" onClick={() => onChange(list.filter((_, idx) => idx !== i))} className="text-xs font-medium text-red-500 hover:underline">Sil</button>
+                </div>
+              </div>
+              <input className={`${base} mb-2`} placeholder="Üst rozet (örn. ⚡ İncek · Gölbaşı)" value={it.badge ?? ""} onChange={(e) => upd(i, "badge", e.target.value)} />
+              <input className={`${base} mb-2`} placeholder="Başlık 1. satır" value={it.title1 ?? ""} onChange={(e) => upd(i, "title1", e.target.value)} />
+              <input className={`${base} mb-2`} placeholder="Başlık 2. satır (vurgulu)" value={it.title2 ?? ""} onChange={(e) => upd(i, "title2", e.target.value)} />
+              <textarea className={base} rows={2} placeholder="Alt metin" value={it.subtitle ?? ""} onChange={(e) => upd(i, "subtitle", e.target.value)} />
+            </div>
+          ))}
+          <button type="button" onClick={() => onChange([...list, { badge: "", title1: "", title2: "", subtitle: "" }])} className="w-full rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">
+            + Slayt Ekle
+          </button>
+        </div>
+      );
+      break;
+    }
     case "faq": {
       const list = Array.isArray(value) ? value : [];
       const upd = (i, key, v) => onChange(list.map((it, idx) => (idx === i ? { ...it, [key]: v } : it)));
