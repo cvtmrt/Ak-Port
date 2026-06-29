@@ -5,7 +5,8 @@ import { Breadcrumbs, SectionTitle } from "../../components/blocks.jsx";
 
 export default function Page() {
   const { site } = useData();
-  const mapEmbed = `https://maps.google.com/maps?q=${site.address.lat},${site.address.lng}&z=15&output=embed`;
+  const mapQuery = site.address.mapQuery || `${site.address.street}, ${site.address.city}`;
+  const mapEmbed = `https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=16&output=embed`;
 
   return (
     <>

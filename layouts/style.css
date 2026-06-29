@@ -42,9 +42,24 @@
   .animate-herofade {
     animation: herofade 0.5s ease-out;
   }
+  /* Marka şeridi: sonsuz, kesintisiz sağdan sola akış. İçerik iki kez
+     basılır; %50 kayınca ilk kopya ikinciyle tam örtüşür, böylece zıplama
+     olmadan baştan başlar (1 2 3 4 5 1 2 3 4 5 ...). */
+  @keyframes brand-marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .animate-brand-marquee {
+    animation: brand-marquee 30s linear infinite;
+    will-change: transform;
+  }
+  .brand-marquee-pause:hover .animate-brand-marquee {
+    animation-play-state: paused;
+  }
   @media (prefers-reduced-motion: reduce) {
     .animate-floaty { animation: none; }
     .animate-herofade { animation: none; }
+    .animate-brand-marquee { animation: none; }
   }
 }
 

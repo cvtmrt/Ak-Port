@@ -13,7 +13,6 @@ const kurumsal = [
   { href: "/hakkimizda", label: "Hakkımızda" },
   { href: "/neden-biz", label: "Neden Biz?" },
   { href: "/yorumlar", label: "Yorumlar" },
-  { href: "/iletisim", label: "İletişim" },
 ];
 
 const nav = [
@@ -22,6 +21,7 @@ const nav = [
   { label: "Bilgi", children: bilgi },
   { label: "Kurumsal", children: kurumsal },
   { href: "/blog", label: "Blog" },
+  { href: "/iletisim", label: "İletişim" },
 ];
 
 function Logo() {

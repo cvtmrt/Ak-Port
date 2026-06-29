@@ -72,6 +72,7 @@ export default function Page() {
             </div>
           </div>
           <MapEmbed
+            query={site.address?.mapQuery}
             lat={site.address?.lat}
             lng={site.address?.lng}
             title={`${site.name} konum`}
