@@ -5,7 +5,7 @@ import { Settings } from "./Settings.jsx";
 import { Design } from "./Design.jsx";
 import { Pages } from "./Pages.jsx";
 import { HomeEditor } from "./HomeEditor.jsx";
-import { apiLogin, apiLogout } from "../../lib/admin-api.js";
+import { apiLogin, apiLogout, apiGetCollection } from "../../lib/admin-api.js";
 
 const sections = [
   { id: "genel", label: "Genel Bakış" },
@@ -72,15 +72,36 @@ function Login({ onLogin }) {
   );
 }
 
+const dashboardItems = [
+  { id: "products", label: "Ürün" },
+  { id: "categories", label: "Kategori" },
+  { id: "brands", label: "Marka" },
+  { id: "posts", label: "Blog Yazısı" },
+  { id: "reviews", label: "Yorum" },
+  { id: "districts", label: "Bölge" },
+];
+
 function Dashboard({ onGo }) {
-  const stats = [
-    { id: "products", label: "Ürün", count: collections.products.defaults.length },
-    { id: "categories", label: "Kategori", count: collections.categories.defaults.length },
-    { id: "brands", label: "Marka", count: collections.brands.defaults.length },
-    { id: "posts", label: "Blog Yazısı", count: collections.posts.defaults.length },
-    { id: "reviews", label: "Yorum", count: collections.reviews.defaults.length },
-    { id: "districts", label: "Bölge", count: collections.districts.defaults.length },
-  ];
+  // Canlı sayımlar API'den çekilir; uç yoksa şema varsayılanlarına düşülür.
+  const [counts, setCounts] = useState(() =>
+    Object.fromEntries(dashboardItems.map((d) => [d.id, collections[d.id].defaults.length]))
+  );
+
+  useEffect(() => {
+    let alive = true;
+    Promise.all(
+      dashboardItems.map((d) =>
+        apiGetCollection(collections[d.id].key)
+          .then((res) => [d.id, (res.items || collections[d.id].defaults).length])
+          .catch(() => [d.id, collections[d.id].defaults.length])
+      )
+    ).then((entries) => {
+      if (alive) setCounts(Object.fromEntries(entries));
+    });
+    return () => { alive = false; };
+  }, []);
+
+  const stats = dashboardItems.map((d) => ({ ...d, count: counts[d.id] }));
   return (
     <div>
       <h2 className="mb-4 text-lg font-bold text-slate-800">Genel Bakış</h2>
