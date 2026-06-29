@@ -45,8 +45,9 @@ export default function Head() {
       <meta name="geo.region" content="TR-06" />
       <meta name="geo.placename" content="Gölbaşı, Ankara" />
 
-      {/* İkonlar */}
-      <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+      {/* İkonlar (Google arama sonucu + sekme ikonu) */}
+      <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+      <link rel="icon" type="image/png" sizes="512x512" href="/favicon.png" />
       <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
       {/* Google Analytics 4 + Google Ads (yalnızca ID tanımlıysa basılır) */}
