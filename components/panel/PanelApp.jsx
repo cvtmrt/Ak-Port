@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { collections } from "../../lib/panel-schema.js";
 import { Crud } from "./Crud.jsx";
 import { Settings } from "./Settings.jsx";
@@ -100,6 +100,25 @@ export function PanelApp() {
   const [authed, setAuthed] = useState(false);
   const [active, setActive] = useState("genel");
 
+  // Sekmeyi URL hash'i + tarayıcı geçmişiyle senkronla; böylece "geri" tuşu
+  // önceki sekmeye döner (paneli terk etmez).
+  useEffect(() => {
+    const apply = () => {
+      const id = window.location.hash.replace(/^#/, "");
+      setActive(id && sections.some((s) => s.id === id) ? id : "genel");
+    };
+    apply(); // ilk yüklemede hash'ten oku
+    window.addEventListener("popstate", apply);
+    return () => window.removeEventListener("popstate", apply);
+  }, []);
+
+  function go(id) {
+    setActive(id);
+    if (`#${id}` !== window.location.hash) {
+      window.history.pushState(null, "", `#${id}`);
+    }
+  }
+
   async function logout() {
     try { await apiLogout(); } catch {}
     setAuthed(false);
@@ -119,7 +138,7 @@ export function PanelApp() {
           {sections.map((s) => (
             <button
               key={s.id}
-              onClick={() => setActive(s.id)}
+              onClick={() => go(s.id)}
               className={`whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm font-medium transition ${active === s.id ? "bg-amber-500 text-slate-900" : "text-slate-300 hover:bg-white/10"}`}
             >
               {s.label}
@@ -131,7 +150,7 @@ export function PanelApp() {
       {/* İçerik */}
       <main className="flex-1 p-5 sm:p-8">
         <div className="mx-auto max-w-5xl">
-          {active === "genel" && <Dashboard onGo={setActive} />}
+          {active === "genel" && <Dashboard onGo={go} />}
           {active === "home" && <HomeEditor />}
           {active === "pages" && <Pages />}
           {active === "settings" && <Settings />}
