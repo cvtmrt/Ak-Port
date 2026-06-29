@@ -5,6 +5,7 @@ import compression from "compression";
 import { renderPage } from "vike/server";
 import { buildSitemap, buildRobots } from "../lib/sitemap.js";
 import { getAnalyticsConfig } from "../lib/analytics.js";
+import { getSiteSettings } from "../db/data.js";
 import { site } from "../lib/site.js";
 import { mountAdminApi } from "./admin-api.js";
 import "dotenv/config";
@@ -69,10 +70,16 @@ async function startServer() {
   });
 
   app.get(/.*/, async (req, res, next) => {
+    const s = await getSiteSettings();
     const pageContextInit = {
       urlOriginal: req.originalUrl,
       headersOriginal: req.headers,
       analytics: getAnalyticsConfig(),
+      seo: {
+        title: s.seoTitle || site.seoTitle,
+        description: s.seoDescription || site.seoDescription,
+        favicon: s.favicon || "",
+      },
     };
     const pageContext = await renderPage(pageContextInit);
     const { httpResponse } = pageContext;

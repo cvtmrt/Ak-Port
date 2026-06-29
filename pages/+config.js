@@ -6,11 +6,9 @@ import Head from "../layouts/HeadDefault.jsx";
 export default {
   Layout,
   Head,
-  title: "AKÜPORT | İncek & Gölbaşı Akü, Yerinde Montaj ve Acil Akü",
-  description:
-    "İncek, Gölbaşı ve Ankara'da akü satışı, yerinde montaj ve 7/24 acil akü hizmeti. Mutlu, Varta, Bosch, İnci aküleri. Hemen arayın: 0544 479 29 59.",
   lang: "tr",
-  // Sunucudan istemciye taşınacak ek pageContext değerleri (analytics ID'leri).
-  passToClient: ["analytics"],
+  // Başlık/açıklama kök +title.js / +description.js'te (panelden yönetilir).
+  // Sunucudan istemciye taşınacak ek pageContext değerleri.
+  passToClient: ["analytics", "seo"],
   extends: vikeReact,
 };

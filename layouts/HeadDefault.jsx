@@ -11,6 +11,7 @@ export default function Head() {
   const ogImage = abs("/images/acil-aku-afis.jpeg");
   const analytics = pageContext?.analytics || {};
   const { gaId, adsId } = analytics;
+  const customFavicon = pageContext?.seo?.favicon;
 
   // Yönetim paneli arama motorlarına kapalı.
   if (isPanel) {
@@ -45,10 +46,16 @@ export default function Head() {
       <meta name="geo.region" content="TR-06" />
       <meta name="geo.placename" content="Gölbaşı, Ankara" />
 
-      {/* İkonlar (Google arama sonucu + sekme ikonu) */}
-      <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
-      <link rel="icon" type="image/png" sizes="512x512" href="/favicon.png" />
-      <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+      {/* İkonlar (Google arama sonucu + sekme ikonu) — panelden değiştirilebilir */}
+      {customFavicon ? (
+        <link rel="icon" href={customFavicon} />
+      ) : (
+        <>
+          <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+          <link rel="icon" type="image/png" sizes="512x512" href="/favicon.png" />
+        </>
+      )}
+      <link rel="apple-touch-icon" href={customFavicon || "/apple-touch-icon.png"} />
 
       {/* Google Analytics 4 + Google Ads (yalnızca ID tanımlıysa basılır) */}
       {(gaId || adsId) && (
