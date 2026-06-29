@@ -185,8 +185,21 @@ async function getSetting(key, fallback) {
   }
 }
 
+function deepMerge(defaults, override) {
+  const result = { ...defaults };
+  for (const key of Object.keys(override ?? {})) {
+    if (override[key] !== null && typeof override[key] === "object" && !Array.isArray(override[key])) {
+      result[key] = deepMerge(defaults[key] ?? {}, override[key]);
+    } else {
+      result[key] = override[key];
+    }
+  }
+  return result;
+}
+
 export async function getSiteSettings() {
-  return getSetting("site", site);
+  const dbValue = await getSetting("site", site);
+  return deepMerge(site, dbValue);
 }
 
 export async function getHomeContent() {
