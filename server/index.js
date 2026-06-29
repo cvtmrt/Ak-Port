@@ -78,6 +78,7 @@ async function startServer() {
       seo: {
         title: s.seoTitle || site.seoTitle,
         description: s.seoDescription || site.seoDescription,
+        logo: s.logo || site.logo || "",
         favicon: s.favicon || "",
       },
     };

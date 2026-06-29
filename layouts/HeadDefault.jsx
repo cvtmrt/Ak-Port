@@ -11,7 +11,7 @@ export default function Head() {
   const ogImage = abs("/images/acil-aku-afis.jpeg");
   const analytics = pageContext?.analytics || {};
   const { gaId, adsId } = analytics;
-  const customFavicon = pageContext?.seo?.favicon;
+  const customFavicon = pageContext?.seo?.favicon || pageContext?.seo?.logo;
 
   // Yönetim paneli arama motorlarına kapalı.
   if (isPanel) {

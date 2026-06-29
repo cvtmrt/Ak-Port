@@ -1,13 +1,14 @@
 import { usePageContext } from "vike-react/usePageContext";
 import { JsonLd } from "../../../components/JsonLd.jsx";
-import { blogPostingJsonLd, breadcrumbJsonLd } from "../../../lib/seo.js";
+import { blogPostingJsonLd, breadcrumbJsonLd, abs } from "../../../lib/seo.js";
 
 export function Head() {
-  const { data } = usePageContext();
+  const { data, seo } = usePageContext();
   const p = data.post;
+  const logoUrl = seo?.logo ? abs(seo.logo) : undefined;
   return (
     <>
-      <JsonLd data={blogPostingJsonLd(p)} />
+      <JsonLd data={blogPostingJsonLd(p, logoUrl)} />
       <JsonLd
         data={breadcrumbJsonLd([
           { name: "Anasayfa", url: "/" },
