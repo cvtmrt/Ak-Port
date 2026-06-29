@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { usePublicConfig } from "../lib/public-config-client.js";
 import { CategoryIcon, CheckIcon, BoltIcon, PinIcon, ClockIcon, ShieldIcon } from "./icons.jsx";
 import { ProductCard } from "./ProductCard.jsx";
@@ -137,24 +138,54 @@ export function BrandStrip({ brands = brandLogos }) {
     name: brand.name,
     src: brand.src || brand.logo,
   })).filter((brand) => brand.name && brand.src);
+  const trackRef = useRef(null);
+
+  function scroll(dir) {
+    const el = trackRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * Math.round(el.clientWidth * 0.8), behavior: "smooth" });
+  }
+
+  const ArrowBtn = ({ dir, label, children }) => (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={() => scroll(dir)}
+      className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-full border border-brand-dark/15 bg-white text-brand-navy shadow-sm transition hover:border-brand-gold hover:text-brand-gold sm:flex"
+    >
+      {children}
+    </button>
+  );
+
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 md:grid-cols-5">
-      {logos.map((l) => (
-        <div
-          key={l.name}
-          className="flex items-center justify-center rounded-2xl border border-brand-dark/10 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-brand-gold/40 hover:shadow-lg sm:p-6"
-        >
-          <img
-            src={l.src}
-            alt={`${l.name} akü`}
-            loading="lazy"
-            decoding="async"
-            width="160"
-            height="64"
-            className="h-12 w-auto max-w-full object-contain sm:h-14"
-          />
-        </div>
-      ))}
+    <div className="flex items-center gap-3">
+      <ArrowBtn dir={-1} label="Önceki markalar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+      </ArrowBtn>
+      <div
+        ref={trackRef}
+        className="flex flex-1 snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-1 sm:gap-5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {logos.map((l) => (
+          <div
+            key={l.name}
+            className="flex w-40 shrink-0 snap-start items-center justify-center rounded-2xl border border-brand-dark/10 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-brand-gold/40 hover:shadow-lg sm:w-48 sm:p-6"
+          >
+            <img
+              src={l.src}
+              alt={`${l.name} akü`}
+              loading="lazy"
+              decoding="async"
+              width="160"
+              height="64"
+              className="h-12 w-auto max-w-full object-contain sm:h-14"
+            />
+          </div>
+        ))}
+      </div>
+      <ArrowBtn dir={1} label="Sonraki markalar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+      </ArrowBtn>
     </div>
   );
 }
