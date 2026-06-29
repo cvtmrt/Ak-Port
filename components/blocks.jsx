@@ -138,18 +138,22 @@ export function BrandStrip({ brands = brandLogos }) {
     src: brand.src || brand.logo,
   })).filter((brand) => brand.name && brand.src);
   return (
-    <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-5 sm:gap-x-14">
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 md:grid-cols-5">
       {logos.map((l) => (
-        <img
+        <div
           key={l.name}
-          src={l.src}
-          alt={`${l.name} akü`}
-          loading="lazy"
-          decoding="async"
-          width="96"
-          height="32"
-          className="h-7 w-auto opacity-70 grayscale transition duration-300 hover:opacity-100 hover:grayscale-0 sm:h-8"
-        />
+          className="flex items-center justify-center rounded-2xl border border-brand-dark/10 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-brand-gold/40 hover:shadow-lg sm:p-6"
+        >
+          <img
+            src={l.src}
+            alt={`${l.name} akü`}
+            loading="lazy"
+            decoding="async"
+            width="160"
+            height="64"
+            className="h-12 w-auto max-w-full object-contain sm:h-14"
+          />
+        </div>
       ))}
     </div>
   );
