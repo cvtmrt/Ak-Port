@@ -210,6 +210,11 @@ export async function getDesignSettings() {
   return getSetting("design", designDefaults);
 }
 
+export async function getGallery() {
+  const items = await getSetting("gallery", []);
+  return Array.isArray(items) ? items : [];
+}
+
 export async function getContentPages() {
   const defaults = pageDefaults.map((p) => ({ id: p.id, label: p.label, path: p.path, ...p.defaults }));
   if (!hasDb) return defaults;

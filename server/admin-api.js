@@ -11,6 +11,31 @@ import { homeDefaults, designDefaults } from "../lib/panel-schema.js";
 const isProduction = process.env.NODE_ENV === "production";
 const uploadDir = process.env.UPLOAD_DIR || (isProduction ? "/data/uploads" : path.join(process.cwd(), "public/uploads"));
 const publicUploadBase = process.env.UPLOAD_PUBLIC_PATH || "/uploads";
+// 500 MB'lık Railway volume için güvenli bütçe (headroom bırakılır).
+const STORAGE_BUDGET_BYTES = Number(process.env.STORAGE_BUDGET_BYTES || 450 * 1024 * 1024);
+
+// Yükleme klasöründeki tüm dosyaların toplam boyutu = volume'un gerçek doluluğu.
+function diskUsage() {
+  try {
+    const files = fs.readdirSync(uploadDir);
+    let used = 0;
+    let count = 0;
+    for (const name of files) {
+      try {
+        const stat = fs.statSync(path.join(uploadDir, name));
+        if (stat.isFile()) { used += stat.size; count += 1; }
+      } catch {}
+    }
+    return { used, count };
+  } catch {
+    return { used: 0, count: 0 };
+  }
+}
+
+function storageInfo() {
+  const { used, count } = diskUsage();
+  return { used, count, budget: STORAGE_BUDGET_BYTES, remaining: Math.max(0, STORAGE_BUDGET_BYTES - used) };
+}
 
 function sessionValue() {
   const secret = process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_PASSWORD || "dev-admin-session";
@@ -265,6 +290,30 @@ function uploadMiddleware() {
   });
 }
 
+// Multer diske yazmadan önce bütçe kontrolü: gelen istek volume'u aşacaksa reddet.
+function checkQuota(req, res, next) {
+  const incoming = Number(req.headers["content-length"] || 0);
+  const { used } = diskUsage();
+  if (used + incoming > STORAGE_BUDGET_BYTES) {
+    const info = storageInfo();
+    res.status(413).json({
+      ok: false,
+      error: `Depolama alanı doldu (${(info.used / 1048576).toFixed(0)}/${(info.budget / 1048576).toFixed(0)} MB). Yer açmak için galeriden görsel silin.`,
+      storage: info,
+    });
+    return;
+  }
+  next();
+}
+
+// URL'den güvenli dosya adı çıkar (path traversal engelle).
+function filenameFromUrl(url) {
+  if (!url || typeof url !== "string") return null;
+  const base = path.basename(url);
+  if (!base || base === "." || base === ".." || base.includes("/") || base.includes("\\")) return null;
+  return base;
+}
+
 export function mountAdminApi(app) {
   fs.mkdirSync(uploadDir, { recursive: true });
   app.use(publicUploadBase, express.static(uploadDir));
@@ -357,7 +406,7 @@ export function mountAdminApi(app) {
     res.json({ ok: true, count: items.length });
   });
 
-  app.post("/api/admin/upload", requireAdmin, uploadMiddleware().single("file"), async (req, res) => {
+  app.post("/api/admin/upload", requireAdmin, checkQuota, uploadMiddleware().single("file"), async (req, res) => {
     if (!req.file) {
       res.status(400).json({ ok: false, error: "Görsel dosyası alınamadı." });
       return;
@@ -369,6 +418,53 @@ export function mountAdminApi(app) {
         VALUES (${req.file.filename}, ${req.file.originalname}, ${req.file.mimetype}, ${req.file.size}, ${url})
       `;
     }
-    res.json({ ok: true, url });
+    res.json({ ok: true, url, size: req.file.size, storage: storageInfo() });
+  });
+
+  // Yüklenmiş tüm görseller + depolama doluluğu (galeri yöneticisi için).
+  app.get("/api/admin/assets", requireAdmin, async (req, res) => {
+    let items = [];
+    if (hasDb) {
+      try {
+        items = await sql`
+          SELECT id, filename, original_name AS "originalName", mime_type AS "mimeType", size, url, created_at AS "createdAt"
+          FROM assets ORDER BY created_at DESC
+        `;
+      } catch {}
+    }
+    res.json({ items, storage: storageInfo() });
+  });
+
+  // Bir görseli diskten ve DB'den sil (volume'da yer açmak için).
+  app.delete("/api/admin/assets", requireAdmin, async (req, res) => {
+    const filename = filenameFromUrl(req.body?.url);
+    if (!filename) {
+      res.status(400).json({ ok: false, error: "Geçersiz görsel adresi." });
+      return;
+    }
+    try {
+      fs.unlinkSync(path.join(uploadDir, filename));
+    } catch (err) {
+      if (err.code !== "ENOENT") {
+        res.status(500).json({ ok: false, error: "Dosya silinemedi: " + err.message });
+        return;
+      }
+    }
+    if (hasDb) {
+      try { await sql`DELETE FROM assets WHERE filename = ${filename}`; } catch {}
+    }
+    res.json({ ok: true, storage: storageInfo() });
+  });
+
+  // Public galeride gösterilecek küratörlü görsel listesi.
+  app.get("/api/admin/gallery", requireAdmin, async (req, res) => {
+    res.json({ items: await readSetting("gallery", []), storage: storageInfo() });
+  });
+
+  app.put("/api/admin/gallery", requireAdmin, async (req, res) => {
+    if (!requireDb(res)) return;
+    const items = Array.isArray(req.body?.items) ? req.body.items : [];
+    await writeSetting("gallery", items);
+    res.json({ ok: true, count: items.length });
   });
 }

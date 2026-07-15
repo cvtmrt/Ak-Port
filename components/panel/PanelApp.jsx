@@ -5,6 +5,7 @@ import { Settings } from "./Settings.jsx";
 import { Design } from "./Design.jsx";
 import { Pages } from "./Pages.jsx";
 import { HomeEditor } from "./HomeEditor.jsx";
+import { Gallery } from "./Gallery.jsx";
 import { apiLogin, apiLogout, apiGetCollection } from "../../lib/admin-api.js";
 
 const sections = [
@@ -16,6 +17,7 @@ const sections = [
   { id: "posts", label: "Blog" },
   { id: "reviews", label: "Yorumlar" },
   { id: "districts", label: "Bölgeler" },
+  { id: "gallery", label: "Galeri" },
   { id: "pages", label: "Sayfalar" },
   { id: "settings", label: "Site Ayarları" },
   { id: "design", label: "Tasarım" },
@@ -173,6 +175,7 @@ export function PanelApp() {
         <div className="mx-auto max-w-5xl">
           {active === "genel" && <Dashboard onGo={go} />}
           {active === "home" && <HomeEditor />}
+          {active === "gallery" && <Gallery />}
           {active === "pages" && <Pages />}
           {active === "settings" && <Settings />}
           {active === "design" && <Design />}
