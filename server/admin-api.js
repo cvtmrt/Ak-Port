@@ -380,46 +380,8 @@ export function mountAdminApi(app) {
     res.json({ ok: true });
   });
 
-  app.get("/api/admin/:collection", requireAdmin, async (req, res) => {
-    const collection = req.params.collection;
-    if (!readers[collection]) {
-      res.status(404).json({ ok: false, error: "Koleksiyon bulunamadı." });
-      return;
-    }
-    if (!hasDb) {
-      res.json({ items: defaultAdminData[collection] || [] });
-      return;
-    }
-    await ensureCollectionSeeded(collection);
-    res.json({ items: await readers[collection]() });
-  });
-
-  app.put("/api/admin/:collection", requireAdmin, async (req, res) => {
-    const collection = req.params.collection;
-    if (!writers[collection]) {
-      res.status(404).json({ ok: false, error: "Koleksiyon bulunamadı." });
-      return;
-    }
-    if (!requireDb(res)) return;
-    const items = Array.isArray(req.body?.items) ? req.body.items : [];
-    await writers[collection](items);
-    res.json({ ok: true, count: items.length });
-  });
-
-  app.post("/api/admin/upload", requireAdmin, checkQuota, uploadMiddleware().single("file"), async (req, res) => {
-    if (!req.file) {
-      res.status(400).json({ ok: false, error: "Görsel dosyası alınamadı." });
-      return;
-    }
-    const url = `${publicUploadBase}/${req.file.filename}`;
-    if (hasDb) {
-      await sql`
-        INSERT INTO assets (filename, original_name, mime_type, size, url)
-        VALUES (${req.file.filename}, ${req.file.originalname}, ${req.file.mimetype}, ${req.file.size}, ${url})
-      `;
-    }
-    res.json({ ok: true, url, size: req.file.size, storage: storageInfo() });
-  });
+  // NOT: Bu özel uçlar aşağıdaki genel "/:collection" route'undan ÖNCE tanımlı
+  // olmalı; aksi halde "gallery"/"assets" bir koleksiyon sanılıp 404 döner.
 
   // Yüklenmiş tüm görseller + depolama doluluğu (galeri yöneticisi için).
   app.get("/api/admin/assets", requireAdmin, async (req, res) => {
@@ -466,5 +428,46 @@ export function mountAdminApi(app) {
     const items = Array.isArray(req.body?.items) ? req.body.items : [];
     await writeSetting("gallery", items);
     res.json({ ok: true, count: items.length });
+  });
+
+  app.get("/api/admin/:collection", requireAdmin, async (req, res) => {
+    const collection = req.params.collection;
+    if (!readers[collection]) {
+      res.status(404).json({ ok: false, error: "Koleksiyon bulunamadı." });
+      return;
+    }
+    if (!hasDb) {
+      res.json({ items: defaultAdminData[collection] || [] });
+      return;
+    }
+    await ensureCollectionSeeded(collection);
+    res.json({ items: await readers[collection]() });
+  });
+
+  app.put("/api/admin/:collection", requireAdmin, async (req, res) => {
+    const collection = req.params.collection;
+    if (!writers[collection]) {
+      res.status(404).json({ ok: false, error: "Koleksiyon bulunamadı." });
+      return;
+    }
+    if (!requireDb(res)) return;
+    const items = Array.isArray(req.body?.items) ? req.body.items : [];
+    await writers[collection](items);
+    res.json({ ok: true, count: items.length });
+  });
+
+  app.post("/api/admin/upload", requireAdmin, checkQuota, uploadMiddleware().single("file"), async (req, res) => {
+    if (!req.file) {
+      res.status(400).json({ ok: false, error: "Görsel dosyası alınamadı." });
+      return;
+    }
+    const url = `${publicUploadBase}/${req.file.filename}`;
+    if (hasDb) {
+      await sql`
+        INSERT INTO assets (filename, original_name, mime_type, size, url)
+        VALUES (${req.file.filename}, ${req.file.originalname}, ${req.file.mimetype}, ${req.file.size}, ${url})
+      `;
+    }
+    res.json({ ok: true, url, size: req.file.size, storage: storageInfo() });
   });
 }
