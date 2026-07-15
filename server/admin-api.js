@@ -343,6 +343,12 @@ export function mountAdminApi(app) {
     res.json({ ok: true, db: hasDb, uploadDir, uploadPath: publicUploadBase });
   });
 
+  // Oturum kontrolü: geçerli admin cookie'si varsa 200, yoksa 401.
+  // Panel sayfa yenilendiğinde tekrar şifre istememek için bunu kullanır.
+  app.get("/api/admin/session", requireAdmin, (req, res) => {
+    res.json({ ok: true });
+  });
+
   app.post("/api/admin/login", (req, res) => {
     const password = req.body?.password || "";
     if (isProduction && !process.env.ADMIN_PASSWORD) {

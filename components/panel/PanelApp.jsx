@@ -6,7 +6,7 @@ import { Design } from "./Design.jsx";
 import { Pages } from "./Pages.jsx";
 import { HomeEditor } from "./HomeEditor.jsx";
 import { Gallery } from "./Gallery.jsx";
-import { apiLogin, apiLogout, apiGetCollection } from "../../lib/admin-api.js";
+import { apiLogin, apiLogout, apiGetCollection, apiHasSession } from "../../lib/admin-api.js";
 
 const sections = [
   { id: "genel", label: "Genel Bakış" },
@@ -121,7 +121,18 @@ function Dashboard({ onGo }) {
 
 export function PanelApp() {
   const [authed, setAuthed] = useState(false);
+  const [checking, setChecking] = useState(true);
   const [active, setActive] = useState("genel");
+
+  // Sayfa yüklenince mevcut cookie ile oturum geçerli mi diye bak; geçerliyse
+  // tekrar şifre istemeden içeri al.
+  useEffect(() => {
+    let alive = true;
+    apiHasSession()
+      .then((ok) => { if (alive && ok) setAuthed(true); })
+      .finally(() => { if (alive) setChecking(false); });
+    return () => { alive = false; };
+  }, []);
 
   // Sekmeyi URL hash'i + tarayıcı geçmişiyle senkronla; böylece "geri" tuşu
   // önceki sekmeye döner (paneli terk etmez).
@@ -145,6 +156,14 @@ export function PanelApp() {
   async function logout() {
     try { await apiLogout(); } catch {}
     setAuthed(false);
+  }
+
+  if (checking) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-900 text-sm text-slate-400">
+        Yükleniyor...
+      </div>
+    );
   }
 
   if (!authed) return <Login onLogin={() => setAuthed(true)} />;
