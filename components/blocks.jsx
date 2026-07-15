@@ -56,17 +56,39 @@ export function TrustBadges({ items = trust }) {
   );
 }
 
+// Bu kategoriler henüz yayında değil: kart görünsün ve hover olsun ama
+// tıklanınca bir yere yönlendirmesin. Otomobil ve teknoloji kartları tıklanır.
+function isCategoryDisabled(c) {
+  const slug = (c.slug || "").toLowerCase();
+  const name = (c.name || "").toLocaleLowerCase("tr-TR");
+  if (["ticari", "kamyon", "motosiklet"].includes(slug)) return true;
+  return name.includes("akülü") || name.includes("akulu"); // "Akülü Araç Aküsü"
+}
+
 export function CategoryGrid({ categories }) {
+  const cardClass =
+    "group flex flex-col items-center gap-3 rounded-xl border border-brand-dark/10 bg-white p-6 text-center transition-all duration-200 hover:-translate-y-1 hover:border-brand-gold hover:shadow-lg";
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-      {categories.map((c) => (
-        <a key={c.slug} href={`/kategori/${c.slug}`} className="group flex flex-col items-center gap-3 rounded-xl border border-brand-dark/10 bg-white p-6 text-center transition-all duration-200 hover:-translate-y-1 hover:border-brand-gold hover:shadow-lg">
-          <span className="rounded-full bg-brand-navy/5 p-4 text-brand-navy group-hover:bg-brand-gold/15 group-hover:text-brand-gold">
-            <CategoryIcon name={c.icon} width={28} height={28} />
-          </span>
-          <span className="font-bold text-brand-dark">{c.name}</span>
-        </a>
-      ))}
+      {categories.map((c) => {
+        const inner = (
+          <>
+            <span className="rounded-full bg-brand-navy/5 p-4 text-brand-navy group-hover:bg-brand-gold/15 group-hover:text-brand-gold">
+              <CategoryIcon name={c.icon} width={28} height={28} />
+            </span>
+            <span className="font-bold text-brand-dark">{c.name}</span>
+          </>
+        );
+        return isCategoryDisabled(c) ? (
+          <div key={c.slug} className={`${cardClass} cursor-default`} aria-disabled="true">
+            {inner}
+          </div>
+        ) : (
+          <a key={c.slug} href={`/kategori/${c.slug}`} className={cardClass}>
+            {inner}
+          </a>
+        );
+      })}
     </div>
   );
 }

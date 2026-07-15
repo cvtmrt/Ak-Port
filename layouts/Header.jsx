@@ -12,7 +12,6 @@ const bilgi = [
 const kurumsal = [
   { href: "/hakkimizda", label: "Hakkımızda" },
   { href: "/neden-biz", label: "Neden Biz?" },
-  { href: "/galeri", label: "Galeri" },
   { href: "/yorumlar", label: "Yorumlar" },
 ];
 
@@ -20,6 +19,7 @@ const nav = [
   { href: "/acil-aku", label: "Acil Akü" },
   { label: "Bilgi", children: bilgi },
   { label: "Kurumsal", children: kurumsal },
+  { href: "/galeri", label: "Galeri" },
   { href: "/blog", label: "Blog" },
   { href: "/iletisim", label: "İletişim" },
 ];
