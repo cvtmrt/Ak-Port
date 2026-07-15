@@ -3,14 +3,14 @@ import { useData } from "vike-react/useData";
 import { CallButton, WhatsappButton } from "../../components/Cta.jsx";
 import { CheckIcon } from "../../components/icons.jsx";
 import {
-  SectionTitle, TrustBadges, CategoryGrid, ProductGrid,
-  AmperLinks, Faq, CtaBand, BrandStrip,
+  SectionTitle, TrustBadges, CategoryGrid,
+  Faq, CtaBand, BrandStrip,
 } from "../../components/blocks.jsx";
 import { ReviewsSection } from "../../components/Reviews.jsx";
 import { HeroSlides } from "../../components/HeroSlides.jsx";
 
 export default function Page() {
-  const { featured, categories, amper, reviews, ratingSummary, home, brands } = useData();
+  const { categories, reviews, ratingSummary, home, brands } = useData();
   const heroSlides = home.heroSlides && home.heroSlides.length
     ? home.heroSlides
     : [{ badge: home.heroBadge, title1: home.heroTitle1, title2: home.heroTitle2, subtitle: home.heroSubtitle }];
@@ -103,23 +103,6 @@ export default function Page() {
       <section className="container-x py-12">
         <SectionTitle kicker={home.catKicker} title={home.catTitle} desc={home.catDesc} />
         <CategoryGrid categories={categories} />
-      </section>
-
-      {/* ÖNE ÇIKAN ÜRÜNLER */}
-      <section className="bg-white py-12">
-        <div className="container-x">
-          <SectionTitle kicker={home.featKicker} title={home.featTitle} desc={home.featDesc} />
-          <ProductGrid products={featured} />
-          <div className="mt-6">
-            <a href="/urunler" className="btn btn-outline">Tüm Aküleri Gör →</a>
-          </div>
-        </div>
-      </section>
-
-      {/* AMPER HIZLI LİNKLER */}
-      <section className="container-x py-12">
-        <SectionTitle kicker={home.amperKicker} title={home.amperTitle} desc={home.amperDesc} />
-        <AmperLinks values={amper} />
       </section>
 
       {/* HİZMET KAPSAMI */}
