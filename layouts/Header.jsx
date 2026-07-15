@@ -16,7 +16,6 @@ const kurumsal = [
 ];
 
 const nav = [
-  { href: "/urunler", label: "Ürünler" },
   { href: "/acil-aku", label: "Acil Akü" },
   { label: "Bilgi", children: bilgi },
   { label: "Kurumsal", children: kurumsal },
