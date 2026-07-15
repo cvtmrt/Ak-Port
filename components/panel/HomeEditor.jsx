@@ -66,8 +66,7 @@ export function HomeEditor() {
       </div>
 
       <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-500">
-        Not: Öne çıkan ürünler, kategoriler ve amper listesi <strong>Ürünler</strong> bölümünden gelir.
-        Marka logoları <strong>Markalar</strong>, yorumlar <strong>Yorumlar</strong> ekranından yönetilir.
+        Not: Marka logoları <strong>Markalar</strong>, yorumlar <strong>Yorumlar</strong> ekranından yönetilir.
       </div>
     </div>
   );

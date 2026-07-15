@@ -11,8 +11,6 @@ import { apiLogin, apiLogout, apiGetCollection, apiHasSession } from "../../lib/
 const sections = [
   { id: "genel", label: "Genel Bakış" },
   { id: "home", label: "Anasayfa" },
-  { id: "products", label: "Ürünler" },
-  { id: "categories", label: "Kategoriler" },
   { id: "brands", label: "Markalar" },
   { id: "posts", label: "Blog" },
   { id: "reviews", label: "Yorumlar" },
@@ -75,8 +73,6 @@ function Login({ onLogin }) {
 }
 
 const dashboardItems = [
-  { id: "products", label: "Ürün" },
-  { id: "categories", label: "Kategori" },
   { id: "brands", label: "Marka" },
   { id: "posts", label: "Blog Yazısı" },
   { id: "reviews", label: "Yorum" },

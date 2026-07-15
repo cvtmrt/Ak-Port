@@ -1,10 +1,9 @@
-// Railway PostgreSQL'e tabloyu oluşturup ürünleri yükler.
+// Railway PostgreSQL'e tabloları oluşturup başlangıç verisini yükler.
 // Kullanım: DATABASE_URL ayarlı .env ile  ->  npm run db:seed
 import "dotenv/config";
 import fs from "fs";
 import path from "path";
 import { sql, hasDb } from "./index.js";
-import { products, categories } from "./seed-data.js";
 import { reviews, reviewsSummary } from "./reviews-data.js";
 import { posts } from "./posts-data.js";
 import { site, brandNames, districts } from "../lib/site.js";
@@ -22,45 +21,6 @@ if (!hasDb) {
 async function run() {
   const migration = fs.readFileSync(path.join(process.cwd(), "db/migrations/0001_live_admin.sql"), "utf8");
   await sql.unsafe(migration);
-
-  console.log("Tablo oluşturuluyor (yoksa)...");
-  await sql`
-    CREATE TABLE IF NOT EXISTS products (
-      id           serial PRIMARY KEY,
-      slug         text NOT NULL UNIQUE,
-      name         text NOT NULL,
-      brand        text NOT NULL,
-      category     text NOT NULL,
-      technology   text NOT NULL DEFAULT 'standart',
-      amper        integer NOT NULL,
-      volt         integer NOT NULL DEFAULT 12,
-      cca          integer,
-      price        numeric(10,2),
-      stock        boolean NOT NULL DEFAULT true,
-      product_code text,
-      image        text,
-      images       text[],
-      short_desc   text,
-      description  text,
-      featured     boolean NOT NULL DEFAULT false,
-      created_at   timestamp DEFAULT now()
-    );
-  `;
-
-  console.log(`${products.length} ürün yükleniyor...`);
-  for (const p of products) {
-    await sql`
-      INSERT INTO products (slug, name, brand, category, technology, amper, volt, cca, price, stock, product_code, image, short_desc, description, featured)
-      VALUES (${p.slug}, ${p.name}, ${p.brand}, ${p.category}, ${p.technology}, ${p.amper}, ${p.volt}, ${p.cca ?? null}, ${p.price ?? null}, ${p.stock}, ${p.productCode ?? null}, ${p.image ?? null}, ${p.shortDesc ?? null}, ${p.description ?? null}, ${p.featured ?? false})
-      ON CONFLICT (slug) DO UPDATE SET
-        name = EXCLUDED.name, brand = EXCLUDED.brand, category = EXCLUDED.category,
-        technology = EXCLUDED.technology, amper = EXCLUDED.amper, volt = EXCLUDED.volt,
-        cca = EXCLUDED.cca, price = EXCLUDED.price, stock = EXCLUDED.stock,
-        product_code = EXCLUDED.product_code, image = EXCLUDED.image,
-        short_desc = EXCLUDED.short_desc, description = EXCLUDED.description,
-        featured = EXCLUDED.featured;
-    `;
-  }
 
   console.log("Yorumlar tablosu oluşturuluyor (yoksa)...");
   await sql`
@@ -116,23 +76,13 @@ async function run() {
     console.log(`Blog tablosunda ${postCount} kayıt var, örnek yazı atlandı.`);
   }
 
-  console.log("Marka/kategori/bölge tabloları hazırlanıyor...");
+  console.log("Marka/bölge tabloları hazırlanıyor...");
   for (const [index, name] of brandNames.entries()) {
     const logo = `/images/brands/${name.toLocaleLowerCase("tr-TR").replaceAll("ı", "i")}.svg`;
     await sql`
       INSERT INTO brands (name, logo, sort_order, active)
       VALUES (${name}, ${logo}, ${index}, true)
       ON CONFLICT (name) DO UPDATE SET logo = EXCLUDED.logo, sort_order = EXCLUDED.sort_order, active = EXCLUDED.active;
-    `;
-  }
-
-  for (const [index, c] of categories.entries()) {
-    await sql`
-      INSERT INTO categories (slug, name, kind, icon, intro, sort_order, active)
-      VALUES (${c.slug}, ${c.name}, ${c.kind}, ${c.icon}, ${c.intro ?? null}, ${index}, true)
-      ON CONFLICT (slug) DO UPDATE SET
-        name = EXCLUDED.name, kind = EXCLUDED.kind, icon = EXCLUDED.icon, intro = EXCLUDED.intro,
-        sort_order = EXCLUDED.sort_order, active = EXCLUDED.active;
     `;
   }
 

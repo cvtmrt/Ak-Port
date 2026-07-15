@@ -1,6 +1,5 @@
 import { usePublicConfig } from "../lib/public-config-client.js";
-import { CategoryIcon, CheckIcon, BoltIcon, PinIcon, ClockIcon, ShieldIcon } from "./icons.jsx";
-import { ProductCard } from "./ProductCard.jsx";
+import { CheckIcon, BoltIcon, PinIcon, ClockIcon, ShieldIcon } from "./icons.jsx";
 
 export function Breadcrumbs({ items }) {
   return (
@@ -52,65 +51,6 @@ export function TrustBadges({ items = trust }) {
           </div>
         </div>
       );})}
-    </div>
-  );
-}
-
-// Bu kategoriler henüz yayında değil: kart görünsün ve hover olsun ama
-// tıklanınca bir yere yönlendirmesin. Otomobil ve teknoloji kartları tıklanır.
-function isCategoryDisabled(c) {
-  const slug = (c.slug || "").toLowerCase();
-  const name = (c.name || "").toLocaleLowerCase("tr-TR");
-  if (["ticari", "kamyon", "motosiklet"].includes(slug)) return true;
-  return name.includes("akülü") || name.includes("akulu"); // "Akülü Araç Aküsü"
-}
-
-export function CategoryGrid({ categories }) {
-  const cardClass =
-    "group flex flex-col items-center gap-3 rounded-xl border border-brand-dark/10 bg-white p-6 text-center transition-all duration-200 hover:-translate-y-1 hover:border-brand-gold hover:shadow-lg";
-  return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-      {categories.map((c) => {
-        const inner = (
-          <>
-            <span className="rounded-full bg-brand-navy/5 p-4 text-brand-navy group-hover:bg-brand-gold/15 group-hover:text-brand-gold">
-              <CategoryIcon name={c.icon} width={28} height={28} />
-            </span>
-            <span className="font-bold text-brand-dark">{c.name}</span>
-          </>
-        );
-        return isCategoryDisabled(c) ? (
-          <div key={c.slug} className={`${cardClass} cursor-default`} aria-disabled="true">
-            {inner}
-          </div>
-        ) : (
-          <a key={c.slug} href={`/kategori/${c.slug}`} className={cardClass}>
-            {inner}
-          </a>
-        );
-      })}
-    </div>
-  );
-}
-
-export function ProductGrid({ products }) {
-  const { site } = usePublicConfig();
-  if (!products?.length) {
-    return <p className="rounded-lg bg-white p-6 text-center text-brand-navy/70">Bu kategoride henüz ürün eklenmedi. Stok için <a className="font-semibold text-brand-gold" href={`tel:${site.phoneIntl}`}>arayın</a>.</p>;
-  }
-  return (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-      {products.map((p) => <ProductCard key={p.slug} product={p} />)}
-    </div>
-  );
-}
-
-export function AmperLinks({ values }) {
-  return (
-    <div className="flex flex-wrap gap-2">
-      {values.map((a) => (
-        <a key={a} href={`/amper/${a}`} className="chip hover:bg-brand-gold/20">{a} Amper Akü</a>
-      ))}
     </div>
   );
 }

@@ -4,7 +4,6 @@ import {
   serial,
   text,
   integer,
-  numeric,
   boolean,
   jsonb,
   timestamp,
@@ -38,46 +37,10 @@ export const reviews = pgTable("reviews", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const products = pgTable("products", {
-  id: serial("id").primaryKey(),
-  slug: text("slug").notNull().unique(),
-  name: text("name").notNull(),
-  brand: text("brand").notNull(),
-  // Kategori/araç tipi: otomobil, ticari, kamyon, motosiklet, deniz vb.
-  category: text("category").notNull(),
-  // Teknoloji: standart | efb | agm | start-stop | jel
-  technology: text("technology").notNull().default("standart"),
-  amper: integer("amper").notNull(), // Ah
-  volt: integer("volt").notNull().default(12),
-  // Marş gücü (CCA) - opsiyonel
-  cca: integer("cca"),
-  price: numeric("price", { precision: 10, scale: 2 }),
-  stock: boolean("stock").notNull().default(true),
-  productCode: text("product_code"),
-  image: text("image"), // ana görsel
-  images: text("images").array(), // ek galeri görselleri (panel/backend doldurur)
-  shortDesc: text("short_desc"),
-  description: text("description"),
-  featured: boolean("featured").notNull().default(false),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
 export const brands = pgTable("brands", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
   logo: text("logo"),
-  sortOrder: integer("sort_order").notNull().default(0),
-  active: boolean("active").notNull().default(true),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-export const categories = pgTable("categories", {
-  id: serial("id").primaryKey(),
-  slug: text("slug").notNull().unique(),
-  name: text("name").notNull(),
-  kind: text("kind").notNull().default("category"),
-  icon: text("icon").notNull().default("battery"),
-  intro: text("intro"),
   sortOrder: integer("sort_order").notNull().default(0),
   active: boolean("active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),

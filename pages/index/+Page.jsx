@@ -3,14 +3,13 @@ import { useData } from "vike-react/useData";
 import { CallButton, WhatsappButton } from "../../components/Cta.jsx";
 import { CheckIcon } from "../../components/icons.jsx";
 import {
-  SectionTitle, TrustBadges, CategoryGrid,
-  Faq, CtaBand, BrandStrip,
+  SectionTitle, TrustBadges, Faq, CtaBand, BrandStrip,
 } from "../../components/blocks.jsx";
 import { ReviewsSection } from "../../components/Reviews.jsx";
 import { HeroSlides } from "../../components/HeroSlides.jsx";
 
 export default function Page() {
-  const { categories, reviews, ratingSummary, home, brands } = useData();
+  const { reviews, ratingSummary, home, brands } = useData();
   const heroSlides = home.heroSlides && home.heroSlides.length
     ? home.heroSlides
     : [{ badge: home.heroBadge, title1: home.heroTitle1, title2: home.heroTitle2, subtitle: home.heroSubtitle }];
@@ -97,12 +96,6 @@ export default function Page() {
           {home.brandHeading}
         </p>
         <BrandStrip brands={brands} />
-      </section>
-
-      {/* KATEGORİLER */}
-      <section className="container-x py-12">
-        <SectionTitle kicker={home.catKicker} title={home.catTitle} desc={home.catDesc} />
-        <CategoryGrid categories={categories} />
       </section>
 
       {/* HİZMET KAPSAMI */}

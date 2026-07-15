@@ -2,85 +2,19 @@
 // Türetilmiş sorgular JS tarafında filtrelenir (katalog boyutu için yeterli).
 import { db, hasDb } from "./index.js";
 import {
-  products as productsTable,
   reviews as reviewsTable,
   posts as postsTable,
   brands as brandsTable,
-  categories as categoriesTable,
   districts as districtsTable,
   contentPages as contentPagesTable,
   settings as settingsTable,
 } from "./schema.js";
-import {
-  products as seedProducts,
-  categories as seedCategories,
-} from "./seed-data.js";
 import { reviews as seedReviews, reviewsSummary as seedReviewsSummary } from "./reviews-data.js";
 import { posts as seedPosts } from "./posts-data.js";
 import { site } from "../lib/site.js";
 import { homeDefaults, designDefaults, pages as pageDefaults } from "../lib/panel-schema.js";
 import { defaultAdminData, defaultBrands, ensureCollectionSeeded, ensureSettingSeeded } from "./bootstrap.js";
 import { eq, desc, asc } from "drizzle-orm";
-
-async function loadProducts() {
-  if (!hasDb) return seedProducts;
-  try {
-    await ensureCollectionSeeded("products");
-    return await db.select().from(productsTable);
-  } catch (err) {
-    console.error("[db] Ürünler okunamadı, seed verisine düşülüyor:", err.message);
-    return seedProducts;
-  }
-}
-
-export async function getProducts() {
-  return loadProducts();
-}
-
-export async function getFeatured() {
-  return (await loadProducts()).filter((p) => p.featured);
-}
-
-export async function getProductBySlug(slug) {
-  return (await loadProducts()).find((p) => p.slug === slug) || null;
-}
-
-// Kategori VEYA teknoloji slug'ına göre (otomobil, kamyon, agm, start-stop...)
-export async function getByCategory(slug) {
-  return (await loadProducts()).filter(
-    (p) => p.category === slug || p.technology === slug
-  );
-}
-
-export async function getByAmper(amper) {
-  const a = Number(amper);
-  return (await loadProducts()).filter((p) => Number(p.amper) === a);
-}
-
-export async function getCategories() {
-  if (!hasDb) return seedCategories;
-  try {
-    await ensureCollectionSeeded("categories");
-    const rows = await db
-      .select()
-      .from(categoriesTable)
-      .where(eq(categoriesTable.active, true))
-      .orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
-    return rows;
-  } catch (err) {
-    console.error("[db] Kategoriler okunamadı, seed verisine düşülüyor:", err.message);
-    return seedCategories;
-  }
-}
-
-export async function getCategory(slug) {
-  return (await getCategories()).find((c) => c.slug === slug) || null;
-}
-
-export async function getAmperValues() {
-  const vals = [...new Set((await loadProducts()).map((p) => Number(p.amper)))];
-  return vals.sort((a, b) => a - b);
-}
 
 export async function getBrands() {
   if (!hasDb) return defaultBrands;
@@ -245,15 +179,4 @@ export async function getPublicConfig() {
     getDistricts(),
   ]);
   return { site: siteSettings, design, home, brands, districts };
-}
-
-export async function getRelated(product, limit = 4) {
-  const all = await loadProducts();
-  return all
-    .filter(
-      (p) =>
-        p.slug !== product.slug &&
-        (p.category === product.category || p.technology === product.technology)
-    )
-    .slice(0, limit);
 }

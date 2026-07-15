@@ -79,27 +79,6 @@ function jsonb(value) {
   return JSON.stringify(value ?? {});
 }
 
-function normalizeProduct(p) {
-  return {
-    slug: p.slug,
-    name: p.name,
-    brand: p.brand || "",
-    category: p.category || "otomobil",
-    technology: p.technology || "standart",
-    amper: toInt(p.amper, 0),
-    volt: toInt(p.volt, 12),
-    cca: toInt(p.cca),
-    price: p.price === "" || p.price === undefined ? null : String(p.price),
-    stock: toBool(p.stock, true),
-    productCode: p.productCode || null,
-    image: p.image || null,
-    images: Array.isArray(p.images) ? p.images : [],
-    shortDesc: p.shortDesc || null,
-    description: p.description || null,
-    featured: toBool(p.featured, false),
-  };
-}
-
 function normalizePost(p) {
   return {
     slug: p.slug,
@@ -136,18 +115,6 @@ function normalizeBrand(b, index) {
   };
 }
 
-function normalizeCategory(c, index) {
-  return {
-    slug: c.slug,
-    name: c.name,
-    kind: c.kind || "category",
-    icon: c.icon || "battery",
-    intro: c.intro || null,
-    sortOrder: toInt(c.sortOrder, index),
-    active: toBool(c.active, true),
-  };
-}
-
 function normalizeDistrict(d, index) {
   return {
     slug: d.slug,
@@ -179,11 +146,9 @@ function normalizePage(p) {
 }
 
 const readers = {
-  products: async () => sql`SELECT id, slug, name, brand, category, technology, amper, volt, cca, price, stock, product_code AS "productCode", image, images, short_desc AS "shortDesc", description, featured FROM products ORDER BY id`,
   posts: async () => sql`SELECT id, slug, title, excerpt, content, cover, author, tags, published, published_at AS "publishedAt" FROM posts ORDER BY published_at DESC NULLS LAST, id DESC`,
   reviews: async () => sql`SELECT id, author, rating, text, time, avatar, source, approved FROM reviews ORDER BY id DESC`,
   brands: async () => sql`SELECT id, name, logo, sort_order AS "sortOrder", active FROM brands ORDER BY sort_order, name`,
-  categories: async () => sql`SELECT id, slug, name, kind, icon, intro, sort_order AS "sortOrder", active FROM categories ORDER BY sort_order, name`,
   districts: async () => sql`SELECT id, slug, name, title, intro, sort_order AS "sortOrder", active FROM districts ORDER BY sort_order, name`,
   pages: async () => {
     const rows = await sql`SELECT id, label, path, title, subtitle, content, data, published FROM content_pages ORDER BY label`;
@@ -192,15 +157,6 @@ const readers = {
 };
 
 const writers = {
-  products: async (items) => {
-    await sql`DELETE FROM products`;
-    for (const item of items.map(normalizeProduct)) {
-      await sql`
-        INSERT INTO products (slug, name, brand, category, technology, amper, volt, cca, price, stock, product_code, image, images, short_desc, description, featured)
-        VALUES (${item.slug}, ${item.name}, ${item.brand}, ${item.category}, ${item.technology}, ${item.amper}, ${item.volt}, ${item.cca}, ${item.price}, ${item.stock}, ${item.productCode}, ${item.image}, ${item.images}, ${item.shortDesc}, ${item.description}, ${item.featured})
-      `;
-    }
-  },
   posts: async (items) => {
     await sql`DELETE FROM posts`;
     for (const item of items.map(normalizePost)) {
@@ -225,16 +181,6 @@ const writers = {
       await sql`
         INSERT INTO brands (name, logo, sort_order, active)
         VALUES (${item.name}, ${item.logo}, ${item.sortOrder}, ${item.active})
-      `;
-    }
-  },
-  categories: async (items) => {
-    await sql`DELETE FROM categories`;
-    for (const [index, raw] of items.entries()) {
-      const item = normalizeCategory(raw, index);
-      await sql`
-        INSERT INTO categories (slug, name, kind, icon, intro, sort_order, active)
-        VALUES (${item.slug}, ${item.name}, ${item.kind}, ${item.icon}, ${item.intro}, ${item.sortOrder}, ${item.active})
       `;
     }
   },

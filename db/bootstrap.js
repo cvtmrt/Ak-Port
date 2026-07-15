@@ -1,5 +1,4 @@
 import { hasDb, sql } from "./index.js";
-import { products as seedProducts, categories as seedCategories } from "./seed-data.js";
 import { posts as seedPosts } from "./posts-data.js";
 import { reviews as seedReviews, reviewsSummary as seedReviewsSummary } from "./reviews-data.js";
 import { site, brandNames, districts as seedDistricts } from "../lib/site.js";
@@ -30,11 +29,9 @@ export const defaultBrands = brandNames.map((name, index) => ({
 }));
 
 export const defaultAdminData = {
-  products: seedProducts,
   posts: seedPosts,
   reviews: seedReviews,
   brands: defaultBrands,
-  categories: seedCategories.map((item, index) => ({ ...item, sortOrder: index, active: true })),
   districts: seedDistricts.map((item, index) => ({ ...item, sortOrder: index, active: true })),
   pages: pageDefaults.map((p) => ({ id: p.id, label: p.label, path: p.path, ...p.defaults, published: true })),
 };
@@ -58,10 +55,6 @@ async function writeMarker(key) {
 
 async function countCollection(collection) {
   switch (collection) {
-    case "products": {
-      const rows = await sql`SELECT count(*)::int AS count FROM products`;
-      return rows[0]?.count ?? 0;
-    }
     case "posts": {
       const rows = await sql`SELECT count(*)::int AS count FROM posts`;
       return rows[0]?.count ?? 0;
@@ -74,10 +67,6 @@ async function countCollection(collection) {
       const rows = await sql`SELECT count(*)::int AS count FROM brands`;
       return rows[0]?.count ?? 0;
     }
-    case "categories": {
-      const rows = await sql`SELECT count(*)::int AS count FROM categories`;
-      return rows[0]?.count ?? 0;
-    }
     case "districts": {
       const rows = await sql`SELECT count(*)::int AS count FROM districts`;
       return rows[0]?.count ?? 0;
@@ -88,16 +77,6 @@ async function countCollection(collection) {
     }
     default:
       return 0;
-  }
-}
-
-async function insertDefaultProducts() {
-  for (const p of defaultAdminData.products) {
-    await sql`
-      INSERT INTO products (slug, name, brand, category, technology, amper, volt, cca, price, stock, product_code, image, images, short_desc, description, featured)
-      VALUES (${p.slug}, ${p.name}, ${p.brand}, ${p.category}, ${p.technology}, ${p.amper}, ${p.volt}, ${p.cca ?? null}, ${p.price ?? null}, ${p.stock ?? true}, ${p.productCode ?? null}, ${p.image ?? null}, ${Array.isArray(p.images) ? p.images : []}, ${p.shortDesc ?? null}, ${p.description ?? null}, ${p.featured ?? false})
-      ON CONFLICT (slug) DO NOTHING
-    `;
   }
 }
 
@@ -131,16 +110,6 @@ async function insertDefaultBrands() {
   }
 }
 
-async function insertDefaultCategories() {
-  for (const category of defaultAdminData.categories) {
-    await sql`
-      INSERT INTO categories (slug, name, kind, icon, intro, sort_order, active)
-      VALUES (${category.slug}, ${category.name}, ${category.kind}, ${category.icon}, ${category.intro ?? null}, ${category.sortOrder}, ${category.active})
-      ON CONFLICT (slug) DO NOTHING
-    `;
-  }
-}
-
 async function insertDefaultDistricts() {
   for (const district of defaultAdminData.districts) {
     await sql`
@@ -163,9 +132,6 @@ async function insertDefaultPages() {
 
 async function seedCollection(collection) {
   switch (collection) {
-    case "products":
-      await insertDefaultProducts();
-      break;
     case "posts":
       await insertDefaultPosts();
       break;
@@ -174,9 +140,6 @@ async function seedCollection(collection) {
       break;
     case "brands":
       await insertDefaultBrands();
-      break;
-    case "categories":
-      await insertDefaultCategories();
       break;
     case "districts":
       await insertDefaultDistricts();
@@ -241,9 +204,7 @@ export async function ensureBaseSeeded() {
     ensureSettingSeeded("home", homeDefaults),
     ensureSettingSeeded("design", designDefaults),
     ensureCollectionSeeded("brands"),
-    ensureCollectionSeeded("categories"),
     ensureCollectionSeeded("districts"),
-    ensureCollectionSeeded("products"),
     ensureCollectionSeeded("posts"),
     ensureCollectionSeeded("reviews"),
     ensureCollectionSeeded("pages"),

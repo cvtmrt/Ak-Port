@@ -2,22 +2,13 @@ import { brandNames, districts } from "../lib/site.js";
 import { usePublicConfig } from "../lib/public-config-client.js";
 import { PhoneIcon, MailIcon, PinIcon, ClockIcon, InstagramIcon } from "../components/icons.jsx";
 
-const cats = [
-  { href: "/kategori/otomobil", label: "Otomobil Aküsü" },
-  { href: "/kategori/ticari", label: "Ticari Araç Aküsü" },
-  { href: "/kategori/kamyon", label: "Kamyon Aküsü" },
-  { href: "/kategori/motosiklet", label: "Motosiklet Aküsü" },
-  { href: "/kategori/agm", label: "AGM Akü" },
-  { href: "/kategori/start-stop", label: "Start-Stop Akü" },
-];
-
 export function Footer() {
   const { site: currentSite, brands: currentBrands, districts: currentDistricts } = usePublicConfig();
   const footerBrands = Array.isArray(currentBrands) ? currentBrands.map((b) => b.name) : brandNames;
   const footerDistricts = Array.isArray(currentDistricts) ? currentDistricts : districts;
   return (
     <footer className="mt-16 bg-brand-dark text-white/80">
-      <div className="container-x grid gap-8 py-12 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="container-x grid gap-8 py-12 sm:grid-cols-2 lg:grid-cols-3">
         <div>
           <h3 className="mb-3 text-lg font-bold text-white">{currentSite.name}</h3>
           <p className="text-sm leading-relaxed">{currentSite.legalName}. İncek ve Gölbaşı'nda akü satışı, yerinde montaj ve 7/24 acil akü hizmeti.</p>
@@ -37,15 +28,6 @@ export function Footer() {
               <InstagramIcon width={18} height={18} /> @akuportankara
             </a>
           )}
-        </div>
-
-        <div>
-          <h4 className="mb-3 font-semibold text-white">Kategoriler</h4>
-          <ul className="space-y-2 text-sm">
-            {cats.map((c) => (
-              <li key={c.href}><a href={c.href} className="hover:text-brand-gold">{c.label}</a></li>
-            ))}
-          </ul>
         </div>
 
         <div>

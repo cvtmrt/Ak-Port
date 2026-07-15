@@ -2,10 +2,10 @@ import { useData } from "vike-react/useData";
 import { CallButton, WhatsappButton } from "../../../components/Cta.jsx";
 import { CheckIcon, PinIcon } from "../../../components/icons.jsx";
 import { MapEmbed } from "../../../components/MapEmbed.jsx";
-import { Breadcrumbs, SectionTitle, CategoryGrid, ProductGrid, CtaBand, Faq, DistrictLinks } from "../../../components/blocks.jsx";
+import { Breadcrumbs, SectionTitle, CtaBand, Faq, DistrictLinks } from "../../../components/blocks.jsx";
 
 export default function Page() {
-  const { district: d, featured, categories, site, content, otherDistricts } = useData();
+  const { district: d, site, content, otherDistricts } = useData();
   return (
     <>
       <Breadcrumbs items={[{ name: "Anasayfa", url: "/" }, { name: `${d.name} Akü`, url: `/bolge/${d.slug}` }]} />
@@ -75,18 +75,6 @@ export default function Page() {
             />
           </aside>
         </div>
-      </section>
-
-      <section className="bg-white py-10">
-        <div className="container-x">
-          <SectionTitle title={`${d.name}'da Hangi Aküleri Buluruz?`} desc="Otomobil, ticari araç, kamyon ve motosiklet aküsünde tüm marka ve amperler." />
-          <CategoryGrid categories={categories} />
-        </div>
-      </section>
-
-      <section className="container-x py-10">
-        <SectionTitle kicker="Popüler" title={`${d.name} İçin Önerilen Aküler`} />
-        <ProductGrid products={featured} />
       </section>
 
       {/* Bölgeye özel SSS (FAQ JSON-LD +Head.jsx içinde) */}
