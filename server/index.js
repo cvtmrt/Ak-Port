@@ -6,7 +6,7 @@ import { renderPage } from "vike/server";
 import { buildSitemap, buildRobots } from "../lib/sitemap.js";
 import { getAnalyticsConfig } from "../lib/analytics.js";
 import { getSiteSettings } from "../db/data.js";
-import { ensureFreeWordingPatched } from "../db/bootstrap.js";
+import { ensureFreeWordingPatched, ensureWrongFaviconCleared } from "../db/bootstrap.js";
 import { site } from "../lib/site.js";
 import { mountAdminApi } from "./admin-api.js";
 import "dotenv/config";
@@ -99,6 +99,9 @@ async function startServer() {
   // Açılışı bloklamaz; DB yoksa ya da hata alırsa site normal çalışmaya devam eder.
   ensureFreeWordingPatched().catch((err) => {
     console.error("[db] İçerik yaması uygulanamadı:", err.message);
+  });
+  ensureWrongFaviconCleared().catch((err) => {
+    console.error("[db] Favicon yaması uygulanamadı:", err.message);
   });
 }
 

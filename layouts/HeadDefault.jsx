@@ -11,7 +11,10 @@ export default function Head() {
   const ogImage = abs("/images/acil-aku-afis.jpeg");
   const analytics = pageContext?.analytics || {};
   const { gaId, adsId } = analytics;
-  const customFavicon = pageContext?.seo?.favicon || pageContext?.seo?.logo;
+  // Sekme ikonu yalnızca panelde ayrıca favicon yüklendiyse oradan gelir.
+  // SEO logosu (Google arama sonucu görseli) favicon yerine kullanılmaz: o alan
+  // büyük bir kare görsel bekler, sekmede bulanık/okunmaz görünür.
+  const customFavicon = pageContext?.seo?.favicon || "";
 
   // Yönetim paneli arama motorlarına kapalı.
   if (isPanel) {

@@ -290,6 +290,41 @@ export async function ensureFreeWordingPatched() {
   freeWordingPatched = true;
 }
 
+// --- Tek seferlik düzeltme: panele yanlışlıkla yüklenen "A" monogramı ---
+// 03.08.2026'da site ayarlarındaki Favicon ve Logo alanlarına AKÜPORT'la ilgisi
+// olmayan bir logo yüklenmiş; sekme ikonu ve Google görseli o hale gelmişti.
+// Yalnızca bu iki dosya adı hedeflenir, sonradan yüklenecek doğru görseller
+// bu yamadan etkilenmez.
+const WRONG_LOGO_MARKER = "patch:yanlis-favicon-temizlendi";
+const WRONG_LOGO_FILES = [
+  "/uploads/1785774744587-10885990a813.webp",
+  "/uploads/1785774749828-4ab5df695b15.webp",
+];
+let wrongLogoPatched = false;
+
+export async function ensureWrongFaviconCleared() {
+  if (!hasDb || wrongLogoPatched) return;
+  if (await markerExists(WRONG_LOGO_MARKER)) {
+    wrongLogoPatched = true;
+    return;
+  }
+
+  const rows = await sql`SELECT value FROM settings WHERE key = 'site' LIMIT 1`;
+  const value = rows[0]?.value;
+  if (value && typeof value === "object") {
+    const next = { ...value };
+    if (WRONG_LOGO_FILES.includes(next.favicon)) next.favicon = "";
+    if (WRONG_LOGO_FILES.includes(next.logo)) next.logo = site.logo;
+    if (jsonb(next) !== jsonb(value)) {
+      await sql`UPDATE settings SET value = ${jsonb(next)}::jsonb, updated_at = now() WHERE key = 'site'`;
+      console.log("[db] Yanlış yüklenen favicon/logo site ayarlarından temizlendi.");
+    }
+  }
+
+  await writeMarker(WRONG_LOGO_MARKER);
+  wrongLogoPatched = true;
+}
+
 export async function ensureBaseSeeded() {
   if (!hasDb) return;
   await Promise.all([
