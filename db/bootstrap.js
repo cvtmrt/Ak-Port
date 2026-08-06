@@ -197,6 +197,79 @@ export async function ensureSettingSeeded(key, fallback) {
   return fallback;
 }
 
+// --- Tek seferlik içerik düzeltmesi: "ücretsiz yerinde montaj" ifadesi ---
+// Panelden kaydedilen içerik DB'de durduğu için koddaki varsayılanı değiştirmek
+// canlıdaki metni güncellemiyor. Bu yama, kayıtlı içerikteki "ücretsiz" kelimesini
+// montaj ifadelerinden temizler ve marker sayesinde yalnızca bir kez çalışır.
+const FREE_INSTALL_MARKER = "patch:ucretsiz-montaj-kaldirildi";
+let freeInstallPatched = false;
+
+export function stripFreeInstallWording(value) {
+  if (typeof value === "string") {
+    const next = value.replace(/ücretsiz\s+(?=(yerinde|montaj)\b)/gi, "");
+    if (next === value) return value;
+    // "Ücretsiz yerinde montaj" → "Yerinde montaj": baştaki harfi tekrar büyütür.
+    return next.replace(/^\p{Ll}/u, (ch) => ch.toLocaleUpperCase("tr-TR"));
+  }
+  if (Array.isArray(value)) return value.map(stripFreeInstallWording);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, stripFreeInstallWording(item)]));
+  }
+  return value;
+}
+
+export async function ensureFreeInstallWordingPatched() {
+  if (!hasDb || freeInstallPatched) return;
+  if (await markerExists(FREE_INSTALL_MARKER)) {
+    freeInstallPatched = true;
+    return;
+  }
+
+  const settingRows = await sql`SELECT key, value FROM settings WHERE key IN ('home', 'design', 'site')`;
+  for (const row of settingRows) {
+    const cleaned = stripFreeInstallWording(row.value);
+    if (jsonb(cleaned) !== jsonb(row.value)) {
+      await sql`UPDATE settings SET value = ${jsonb(cleaned)}::jsonb, updated_at = now() WHERE key = ${row.key}`;
+    }
+  }
+
+  const pageRows = await sql`SELECT id, title, subtitle, content, data FROM content_pages`;
+  for (const row of pageRows) {
+    const cleaned = {
+      title: stripFreeInstallWording(row.title),
+      subtitle: stripFreeInstallWording(row.subtitle),
+      content: stripFreeInstallWording(row.content),
+      data: stripFreeInstallWording(row.data),
+    };
+    const changed =
+      cleaned.title !== row.title ||
+      cleaned.subtitle !== row.subtitle ||
+      cleaned.content !== row.content ||
+      jsonb(cleaned.data) !== jsonb(row.data);
+    if (!changed) continue;
+    await sql`
+      UPDATE content_pages
+      SET title = ${cleaned.title ?? null},
+          subtitle = ${cleaned.subtitle ?? null},
+          content = ${cleaned.content ?? null},
+          data = ${jsonb(cleaned.data)}::jsonb,
+          updated_at = now()
+      WHERE id = ${row.id}
+    `;
+  }
+
+  const districtRows = await sql`SELECT slug, title, intro FROM districts`;
+  for (const row of districtRows) {
+    const title = stripFreeInstallWording(row.title);
+    const intro = stripFreeInstallWording(row.intro);
+    if (title === row.title && intro === row.intro) continue;
+    await sql`UPDATE districts SET title = ${title ?? null}, intro = ${intro ?? null} WHERE slug = ${row.slug}`;
+  }
+
+  await writeMarker(FREE_INSTALL_MARKER);
+  freeInstallPatched = true;
+}
+
 export async function ensureBaseSeeded() {
   if (!hasDb) return;
   await Promise.all([

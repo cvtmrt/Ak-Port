@@ -31,7 +31,7 @@ export function SectionTitle({ kicker, title, desc }) {
 }
 
 const trust = [
-  { icon: CheckIcon, title: "Ücretsiz Yerinde Montaj", text: "İncek & Gölbaşı'na yerinde akü değişimi" },
+  { icon: CheckIcon, title: "Yerinde Montaj", text: "İncek & Gölbaşı'na yerinde akü değişimi" },
   { icon: ClockIcon, title: "7/24 Acil Akü", text: "Aküm bitti diyene hızlı yol yardım" },
   { icon: ShieldIcon, title: "Garantili Aküler", text: "Üretici garantili orijinal ürünler" },
   { icon: BoltIcon, title: "Tüm Marka & Amper", text: "Mutlu, Varta, Bosch, İnci ve daha fazlası" },
