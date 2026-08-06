@@ -4,3 +4,6 @@ dist
 *.log
 .DS_Store
 .vite
+# Panelden yüklenen görseller: geliştirmede buraya, canlıda Railway volume'üne
+# (/data/uploads) düşer. Depoya girmemeli.
+public/uploads

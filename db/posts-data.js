@@ -22,7 +22,7 @@ export const posts = [
       <p>Ortalama akü ömrü 3-5 yıldır. Bu süreyi geçtiyse, henüz sorun yaşamasanız bile yedeğinizi planlamakta fayda var.</p>
       <h2>5. Akü Uyarı Lambası Yanıyor</h2>
       <p>Gösterge panelindeki akü/şarj ikazı, şarj sisteminde bir sorun olduğunu gösterir. Vakit kaybetmeden kontrol ettirin.</p>
-      <p><strong>AKÜPORT</strong> olarak akünüzü <strong>ücretsiz test ediyor</strong>, gerekirse İncek, Gölbaşı ve Ankara'nın her yerinde <strong>yerinde akü değişimi</strong> yapıyoruz.</p>
+      <p><strong>AKÜPORT</strong> olarak akünüzü <strong>test ediyor</strong>, gerekirse İncek, Gölbaşı ve Ankara'nın her yerinde <strong>yerinde akü değişimi</strong> yapıyoruz.</p>
     `,
   },
   {
@@ -44,7 +44,7 @@ export const posts = [
       <p>Kış girmeden akünüzü test ettirin. Zayıf bir akü, ilk soğukta sizi yolda bırakabilir.</p>
       <h2>Doğru CCA Değerine Sahip Akü Kullanın</h2>
       <p>CCA (soğukta marş gücü) ne kadar yüksekse, akü soğukta o kadar iyi performans gösterir. Aracınıza uygun değeri biz önerebiliriz.</p>
-      <p>Kışa hazırlık için akünüzü <strong>AKÜPORT</strong>'ta ücretsiz test ettirin; gerekirse yerinde değiştirelim.</p>
+      <p>Kışa hazırlık için akünüzü <strong>AKÜPORT</strong>'ta test ettirin; gerekirse yerinde değiştirelim.</p>
     `,
   },
   {

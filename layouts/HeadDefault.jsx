@@ -53,6 +53,7 @@ export default function Head() {
         <>
           <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
           <link rel="icon" type="image/png" sizes="512x512" href="/favicon.png" />
+          <link rel="shortcut icon" type="image/png" href="/favicon-48.png" />
         </>
       )}
       <link rel="apple-touch-icon" href={customFavicon || "/apple-touch-icon.png"} />

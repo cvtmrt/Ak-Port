@@ -36,7 +36,7 @@ export default function Page() {
           <p><strong>Amper saat (Ah)</strong> akünün kapasitesidir; ne kadar yüksekse akü o kadar uzun süre enerji verir. <strong>CCA (soğukta marş gücü)</strong> ise akünün soğukta motoru döndürme gücüdür. Aracınız fabrikadan belli bir Ah ve CCA değeriyle çıkar; genelde aynı veya bir üst değeri takmak doğrudur.</p>
 
           <h2>Akünün Ömrü Ne Kadar?</h2>
-          <p>Ortalama akü ömrü <strong>3-5 yıldır</strong>. Marşın yavaşlaması, far ışıklarının zayıflaması veya aracın sabahları zor çalışması akünün yorulduğunu gösterir. Bu belirtilerde akünüzü ücretsiz test edip durumunu söyleyebiliriz.</p>
+          <p>Ortalama akü ömrü <strong>3-5 yıldır</strong>. Marşın yavaşlaması, far ışıklarının zayıflaması veya aracın sabahları zor çalışması akünün yorulduğunu gösterir. Bu belirtilerde akünüzü test edip durumunu söyleyebiliriz.</p>
 
           <h2>Doğru Aküyü Nasıl Seçerim?</h2>
           <p>En kolayı: aracınızın marka ve modelini bize söyleyin, uygun amper ve teknolojiyi önerelim.</p>

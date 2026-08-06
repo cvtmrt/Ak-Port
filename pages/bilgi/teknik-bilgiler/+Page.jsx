@@ -46,7 +46,7 @@ export default function Page() {
             <li>Kutup başları temiz ve sıkı olmalı; oksitlenme performansı düşürür.</li>
             <li>Atık aküyü çöpe atmayın; bizden alın, geri dönüşüme yönlendirelim.</li>
           </ul>
-          <p>Emin olmadığınız hiçbir işlemi zorlamayın. <a href="/iletisim">Bize ulaşın</a>, akünüzü ücretsiz test edip doğru yönlendirelim.</p>
+          <p>Emin olmadığınız hiçbir işlemi zorlamayın. <a href="/iletisim">Bize ulaşın</a>, akünüzü test edip doğru yönlendirelim.</p>
         </article>
         )}
       </section>

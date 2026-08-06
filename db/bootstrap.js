@@ -197,37 +197,44 @@ export async function ensureSettingSeeded(key, fallback) {
   return fallback;
 }
 
-// --- Tek seferlik içerik düzeltmesi: "ücretsiz yerinde montaj" ifadesi ---
+// --- Tek seferlik içerik düzeltmesi: "ücretsiz" ifadesi ---
 // Panelden kaydedilen içerik DB'de durduğu için koddaki varsayılanı değiştirmek
 // canlıdaki metni güncellemiyor. Bu yama, kayıtlı içerikteki "ücretsiz" kelimesini
-// montaj ifadelerinden temizler ve marker sayesinde yalnızca bir kez çalışır.
-const FREE_INSTALL_MARKER = "patch:ucretsiz-montaj-kaldirildi";
-let freeInstallPatched = false;
+// (montaj, test vb. tüm hizmet metinlerinden) temizler ve marker sayesinde
+// yalnızca bir kez çalışır. Müşteri yorumlarına (reviews) bilerek dokunulmuyor;
+// onlar gerçek kişilerin sözleri.
+const FREE_WORDING_MARKER = "patch:ucretsiz-kaldirildi-v2";
+let freeWordingPatched = false;
 
-export function stripFreeInstallWording(value) {
+export function stripFreeWording(value) {
   if (typeof value === "string") {
-    const next = value.replace(/ücretsiz\s+(?=(yerinde|montaj)\b)/gi, "");
+    const next = value
+      .replace(/ücretsiz\s+/gi, "") // "ücretsiz test" → "test"
+      .replace(/\s+ücretsiz\b/gi, "") // "montaj ücretsiz" → "montaj"
+      .replace(/[ \t]{2,}/g, " ");
     if (next === value) return value;
-    // "Ücretsiz yerinde montaj" → "Yerinde montaj": baştaki harfi tekrar büyütür.
+    // "Ücretsiz yerinde montaj" → "Yerinde montaj": yalnızca silinen kelime metnin
+    // başındaysa sonraki harfi büyütür, cümle ortasındaki metinlere dokunmaz.
+    if (!/^\s*ücretsiz\b/i.test(value)) return next;
     return next.replace(/^\p{Ll}/u, (ch) => ch.toLocaleUpperCase("tr-TR"));
   }
-  if (Array.isArray(value)) return value.map(stripFreeInstallWording);
+  if (Array.isArray(value)) return value.map(stripFreeWording);
   if (value && typeof value === "object") {
-    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, stripFreeInstallWording(item)]));
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, stripFreeWording(item)]));
   }
   return value;
 }
 
-export async function ensureFreeInstallWordingPatched() {
-  if (!hasDb || freeInstallPatched) return;
-  if (await markerExists(FREE_INSTALL_MARKER)) {
-    freeInstallPatched = true;
+export async function ensureFreeWordingPatched() {
+  if (!hasDb || freeWordingPatched) return;
+  if (await markerExists(FREE_WORDING_MARKER)) {
+    freeWordingPatched = true;
     return;
   }
 
   const settingRows = await sql`SELECT key, value FROM settings WHERE key IN ('home', 'design', 'site')`;
   for (const row of settingRows) {
-    const cleaned = stripFreeInstallWording(row.value);
+    const cleaned = stripFreeWording(row.value);
     if (jsonb(cleaned) !== jsonb(row.value)) {
       await sql`UPDATE settings SET value = ${jsonb(cleaned)}::jsonb, updated_at = now() WHERE key = ${row.key}`;
     }
@@ -236,10 +243,10 @@ export async function ensureFreeInstallWordingPatched() {
   const pageRows = await sql`SELECT id, title, subtitle, content, data FROM content_pages`;
   for (const row of pageRows) {
     const cleaned = {
-      title: stripFreeInstallWording(row.title),
-      subtitle: stripFreeInstallWording(row.subtitle),
-      content: stripFreeInstallWording(row.content),
-      data: stripFreeInstallWording(row.data),
+      title: stripFreeWording(row.title),
+      subtitle: stripFreeWording(row.subtitle),
+      content: stripFreeWording(row.content),
+      data: stripFreeWording(row.data),
     };
     const changed =
       cleaned.title !== row.title ||
@@ -260,14 +267,27 @@ export async function ensureFreeInstallWordingPatched() {
 
   const districtRows = await sql`SELECT slug, title, intro FROM districts`;
   for (const row of districtRows) {
-    const title = stripFreeInstallWording(row.title);
-    const intro = stripFreeInstallWording(row.intro);
+    const title = stripFreeWording(row.title);
+    const intro = stripFreeWording(row.intro);
     if (title === row.title && intro === row.intro) continue;
     await sql`UPDATE districts SET title = ${title ?? null}, intro = ${intro ?? null} WHERE slug = ${row.slug}`;
   }
 
-  await writeMarker(FREE_INSTALL_MARKER);
-  freeInstallPatched = true;
+  const postRows = await sql`SELECT id, title, excerpt, content FROM posts`;
+  for (const row of postRows) {
+    const title = stripFreeWording(row.title);
+    const excerpt = stripFreeWording(row.excerpt);
+    const content = stripFreeWording(row.content);
+    if (title === row.title && excerpt === row.excerpt && content === row.content) continue;
+    await sql`
+      UPDATE posts
+      SET title = ${title ?? null}, excerpt = ${excerpt ?? null}, content = ${content ?? null}
+      WHERE id = ${row.id}
+    `;
+  }
+
+  await writeMarker(FREE_WORDING_MARKER);
+  freeWordingPatched = true;
 }
 
 export async function ensureBaseSeeded() {

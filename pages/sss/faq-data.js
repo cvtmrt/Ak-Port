@@ -5,7 +5,7 @@ export const faqItems = [
   { q: "Eski akümü geri alıyor musunuz?", a: "Evet, eski akünüzü hurda olarak değerlendirip yeni akü fiyatından düşüyoruz. Bu hem cebinize hem çevreye iyi gelir." },
   { q: "Hangi amper aküye ihtiyacım olduğunu nasıl anlarım?", a: "Aracınızın marka ve modelini söylemeniz yeterli; doğru amper ve teknolojiyi biz öneririz." },
   { q: "Start-stop aracıma normal akü takılır mı?", a: "Hayır. Start-stop sistemli araçlar EFB veya AGM akü gerektirir. Standart akü takılırsa ömrü kısa olur ve start-stop sistemi düzgün çalışmaz." },
-  { q: "Akünün ömrü ne kadar, ne zaman değişmeli?", a: "Ortalama akü ömrü 3-5 yıldır. Marş yavaşladıysa, far ışıkları zayıfladıysa veya araç sabahları zor çalışıyorsa akünüzü ücretsiz test edip durumunu söyleyebiliriz." },
+  { q: "Akünün ömrü ne kadar, ne zaman değişmeli?", a: "Ortalama akü ömrü 3-5 yıldır. Marş yavaşladıysa, far ışıkları zayıfladıysa veya araç sabahları zor çalışıyorsa akünüzü test edip durumunu söyleyebiliriz." },
   { q: "AGM ile EFB akü arasındaki fark nedir?", a: "İkisi de start-stop araçlar içindir. EFB giriş seviyesi ve daha ekonomiktir; AGM ise daha yüksek elektrik tüketimli ve premium araçlar için daha dayanıklı, üst segment teknolojidir." },
   { q: "Akü takviyesi ile akü değişimi arasındaki fark nedir?", a: "Takviye (çalıştırma), geçici olarak başka bir kaynaktan elektrik vererek aracı çalıştırmaktır. Akü gerçekten ömrünü tamamladıysa takviye kalıcı çözüm olmaz; akünün değişmesi gerekir." },
   { q: "Aracım uzun süre çalışmazsa aküye ne olur?", a: "Araç günlerce çalışmazsa akü kendiliğinden boşalabilir (deşarj). Mümkünse haftada bir aracı bir süre çalıştırın; sık tekrarlarsa akü ömrü kısalır." },
