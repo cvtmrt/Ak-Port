@@ -19,7 +19,7 @@ export default function Page() {
             <WhatsappButton text={`Merhaba, ${d.name} bölgesinde akü değişimi için yardım istiyorum.`} />
           </div>
           <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/80">
-            {["Yerinde akü değişimi", "Garantili montaj", "7/24 acil akü", "Eski akü takas"].map((t) => (
+            {["Yerinde akü değişimi", "Garantili montaj", "Acil akü hattı", "Eski akü takas"].map((t) => (
               <li key={t} className="flex items-center gap-1.5"><CheckIcon width={16} height={16} className="text-brand-gold" /> {t}</li>
             ))}
           </ul>

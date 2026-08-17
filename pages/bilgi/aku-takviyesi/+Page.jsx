@@ -47,7 +47,7 @@ export default function Page() {
           <p>Aracınız takviyeyle çalışıp az sonra yine susuyorsa, büyük ihtimalle akünüz bitmiştir. Bu durumda doğru çözüm akü değişimidir. Biz <strong>Ankara'nın her yerine</strong> geliyor, yerinde akü değişimi yapıyoruz.</p>
 
           <h2>Ankara'da Yerinde Akü Takviyesi ve Değişimi</h2>
-          <p>İncek, Gölbaşı, Beytepe, Çayyolu ve Ümitköy başta olmak üzere Ankara'nın tüm bölgelerine 7/24 acil akü ve takviye hizmeti veriyoruz. Yolda kalmayın; konumunuzu söyleyin, en kısa sürede yanınızdayız.</p>
+          <p>İncek, Gölbaşı, Beytepe, Çayyolu ve Ümitköy başta olmak üzere Ankara'nın tüm bölgelerine acil akü ve takviye hizmeti veriyoruz. Yolda kalmayın; konumunuzu söyleyin, en kısa sürede yanınızdayız.</p>
         </article>
         )}
       </section>

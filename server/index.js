@@ -6,7 +6,7 @@ import { renderPage } from "vike/server";
 import { buildSitemap, buildRobots } from "../lib/sitemap.js";
 import { getAnalyticsConfig } from "../lib/analytics.js";
 import { getSiteSettings } from "../db/data.js";
-import { ensureFreeWordingPatched, ensureWrongFaviconCleared } from "../db/bootstrap.js";
+import { ensureFreeWordingPatched, ensureWrongFaviconCleared, ensureAllDayWordingPatched } from "../db/bootstrap.js";
 import { site } from "../lib/site.js";
 import { mountAdminApi } from "./admin-api.js";
 import "dotenv/config";
@@ -102,6 +102,9 @@ async function startServer() {
   });
   ensureWrongFaviconCleared().catch((err) => {
     console.error("[db] Favicon yaması uygulanamadı:", err.message);
+  });
+  ensureAllDayWordingPatched().catch((err) => {
+    console.error('[db] "7/24" yaması uygulanamadı:', err.message);
   });
 }
 

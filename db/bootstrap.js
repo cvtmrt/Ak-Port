@@ -290,6 +290,101 @@ export async function ensureFreeWordingPatched() {
   freeWordingPatched = true;
 }
 
+// --- Tek seferlik içerik düzeltmesi: "7/24" ifadesi ---
+// İşletme 07:30-23:00 arası çalışıyor; "7/24" iddiası hem yanıltıcı hem de
+// mesai dışı boşa arama getiriyordu. Koddaki varsayılanlar temizlendi, ancak
+// panelden kaydedilen metinler (ör. Google Açıklaması) DB'de durduğu için
+// canlıdaki metin değişmiyor. Bu yama kayıtlı içerikten "7/24" ibaresini
+// çıkarır ve marker sayesinde yalnızca bir kez çalışır. Müşteri yorumlarına
+// (reviews) bilerek dokunulmuyor; onlar gerçek kişilerin sözleri.
+const ALLDAY_WORDING_MARKER = "patch:724-kaldirildi";
+let allDayWordingPatched = false;
+
+export function stripAllDayWording(value) {
+  if (typeof value === "string") {
+    const next = value
+      .replace(/7\s*\/\s*24\s+/g, "") // "7/24 acil akü" → "acil akü"
+      .replace(/\s+7\s*\/\s*24\b/g, "") // "acil akü 7/24" → "acil akü"
+      .replace(/[ \t]{2,}/g, " ");
+    if (next === value) return value;
+    // Silinen ibare metnin başındaysa sonraki harfi büyütür; cümle ortasındaki
+    // metinlere dokunmaz.
+    if (!/^\s*7\s*\/\s*24\b/.test(value)) return next;
+    return next.replace(/^\p{Ll}/u, (ch) => ch.toLocaleUpperCase("tr-TR"));
+  }
+  if (Array.isArray(value)) return value.map(stripAllDayWording);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, stripAllDayWording(item)]));
+  }
+  return value;
+}
+
+export async function ensureAllDayWordingPatched() {
+  if (!hasDb || allDayWordingPatched) return;
+  if (await markerExists(ALLDAY_WORDING_MARKER)) {
+    allDayWordingPatched = true;
+    return;
+  }
+
+  const settingRows = await sql`SELECT key, value FROM settings WHERE key IN ('home', 'design', 'site')`;
+  for (const row of settingRows) {
+    const cleaned = stripAllDayWording(row.value);
+    if (jsonb(cleaned) !== jsonb(row.value)) {
+      await sql`UPDATE settings SET value = ${jsonb(cleaned)}::jsonb, updated_at = now() WHERE key = ${row.key}`;
+    }
+  }
+
+  const pageRows = await sql`SELECT id, title, subtitle, content, data FROM content_pages`;
+  for (const row of pageRows) {
+    const cleaned = {
+      title: stripAllDayWording(row.title),
+      subtitle: stripAllDayWording(row.subtitle),
+      content: stripAllDayWording(row.content),
+      data: stripAllDayWording(row.data),
+    };
+    const changed =
+      cleaned.title !== row.title ||
+      cleaned.subtitle !== row.subtitle ||
+      cleaned.content !== row.content ||
+      jsonb(cleaned.data) !== jsonb(row.data);
+    if (!changed) continue;
+    await sql`
+      UPDATE content_pages
+      SET title = ${cleaned.title ?? null},
+          subtitle = ${cleaned.subtitle ?? null},
+          content = ${cleaned.content ?? null},
+          data = ${jsonb(cleaned.data)}::jsonb,
+          updated_at = now()
+      WHERE id = ${row.id}
+    `;
+  }
+
+  const districtRows = await sql`SELECT slug, title, intro FROM districts`;
+  for (const row of districtRows) {
+    const title = stripAllDayWording(row.title);
+    const intro = stripAllDayWording(row.intro);
+    if (title === row.title && intro === row.intro) continue;
+    await sql`UPDATE districts SET title = ${title ?? null}, intro = ${intro ?? null} WHERE slug = ${row.slug}`;
+  }
+
+  const postRows = await sql`SELECT id, title, excerpt, content FROM posts`;
+  for (const row of postRows) {
+    const title = stripAllDayWording(row.title);
+    const excerpt = stripAllDayWording(row.excerpt);
+    const content = stripAllDayWording(row.content);
+    if (title === row.title && excerpt === row.excerpt && content === row.content) continue;
+    await sql`
+      UPDATE posts
+      SET title = ${title ?? null}, excerpt = ${excerpt ?? null}, content = ${content ?? null}
+      WHERE id = ${row.id}
+    `;
+  }
+
+  await writeMarker(ALLDAY_WORDING_MARKER);
+  allDayWordingPatched = true;
+  console.log('[db] Kayıtlı içerikteki "7/24" ifadesi temizlendi.');
+}
+
 // --- Tek seferlik düzeltme: panele yanlışlıkla yüklenen "A" monogramı ---
 // 03.08.2026'da site ayarlarındaki Favicon ve Logo alanlarına AKÜPORT'la ilgisi
 // olmayan bir logo yüklenmiş; sekme ikonu ve Google görseli o hale gelmişti.

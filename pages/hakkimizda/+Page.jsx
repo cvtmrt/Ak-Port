@@ -4,7 +4,7 @@ import { Breadcrumbs, SectionTitle, CtaBand } from "../../components/blocks.jsx"
 
 const values = [
   "İncek & Gölbaşı'na yerinde akü değişimi",
-  "7/24 acil akü ve yol yardım",
+  "Acil akü ve yol yardım",
   "Orijinal, üretici garantili aküler",
   "Tüm marka ve amperlerde geniş stok",
   "Eski akü takas avantajı",

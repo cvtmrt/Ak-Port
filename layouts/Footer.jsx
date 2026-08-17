@@ -11,7 +11,7 @@ export function Footer() {
       <div className="container-x grid gap-8 py-12 sm:grid-cols-2 lg:grid-cols-3">
         <div>
           <h3 className="mb-3 text-lg font-bold text-white">{currentSite.name}</h3>
-          <p className="text-sm leading-relaxed">{currentSite.legalName}. İncek ve Gölbaşı'nda akü satışı, yerinde montaj ve 7/24 acil akü hizmeti.</p>
+          <p className="text-sm leading-relaxed">{currentSite.legalName}. İncek ve Gölbaşı'nda akü satışı, yerinde montaj ve acil akü hizmeti.</p>
           <div className="mt-4 flex flex-wrap gap-2">
             {footerBrands.map((b) => (
               <span key={b} className="rounded bg-white/10 px-2 py-1 text-xs">{b}</span>

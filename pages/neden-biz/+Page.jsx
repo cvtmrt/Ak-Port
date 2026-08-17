@@ -5,7 +5,7 @@ import { Breadcrumbs, SectionTitle, CtaBand } from "../../components/blocks.jsx"
 
 const reasons = [
   { icon: PinIcon, title: "Yerinde Hizmet", text: "Aracınıza geliyoruz; akünüzü bulunduğunuz yerde değiştiriyoruz. Servise gelmenize gerek yok." },
-  { icon: ClockIcon, title: "7/24 Acil Akü", text: "Aküm bitti dediğiniz anda yola çıkıyoruz. Gece gündüz acil akü desteği." },
+  { icon: ClockIcon, title: "Acil Akü Hattı", text: "Aküm bitti dediğiniz anda yola çıkıyoruz. Hızlı acil akü desteği." },
   { icon: ShieldIcon, title: "Garantili Aküler", text: "Yalnızca orijinal, üretici garantili aküler satıyoruz. Garanti süresini satışta belirtiyoruz." },
   { icon: BoltIcon, title: "Tüm Marka ve Amperler", text: "Mutlu, Varta, Bosch, İnci, Turbo, President… Otomobilden kamyona her amper stoğumuzda." },
   { icon: BatteryIcon, title: "Eski Akü Takas", text: "Eski akünüzü hurda değerinde alıp yeni akü fiyatından düşüyoruz." },
