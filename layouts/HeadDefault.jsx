@@ -7,7 +7,8 @@ export default function Head() {
   const pageContext = usePageContext();
   const path = pageContext?.urlPathname || "/";
   const isPanel = path.startsWith("/panel");
-  const canonical = abs(path === "/" ? "" : path);
+  // Kök adreste de sondaki eğik çizgi korunur; sitemap'teki biçimle birebir aynı olur.
+  const canonical = abs(path);
   const ogImage = abs("/images/acil-aku-afis.jpeg");
   const analytics = pageContext?.analytics || {};
   const { gaId, adsId } = analytics;
